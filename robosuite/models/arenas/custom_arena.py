@@ -5,7 +5,75 @@ from robosuite.models.objects import CylinderObject, BottleObject, CurvedSurface
 from robosuite.utils.mjcf_utils import CustomMaterial, find_elements
 
 
-class WipeArena(TableArena):
+class CustomWipeArena(TableArena):
+    """
+    Workspace that contains an empty table with visual markers on its surface.
+
+    Args:
+        table_full_size (3-tuple): (L,W,H) full dimensions of the table
+        table_friction (3-tuple): (sliding, torsional, rolling) friction parameters of the table
+        table_offset (3-tuple): (x,y,z) offset from center of arena when placing table.
+            Note that the z value sets the upper limit of the table
+        coverage_factor (float): Fraction of table that will be sampled for dirt placement
+        num_markers (int): Number of dirt (peg) particles to generate in a path on the table
+        table_friction_std (float): Standard deviation to sample for the peg friction
+        line_width (float): Diameter of dirt path trace
+        two_clusters (bool): If set, will generate two separate dirt paths with half the number of sensors in each
+    """
+
+#     def __init__(
+#         self,
+#         table_full_size=(0.8, 0.8, 0.05),
+#         table_friction=(0.01, 0.005, 0.0001),
+#         table_offset=(0, 0, 0.8),
+#         table_friction_std=0
+#     ):
+#         # Tactile table-specific features
+#         self.table_friction_std = table_friction_std
+
+#         # Attribute to hold current direction of sampled dirt path
+#         self.direction = None
+
+#         # run superclass init
+#         super().__init__(
+#             table_full_size=table_full_size,
+#             table_friction=table_friction,
+#             table_offset=table_offset,
+#         )
+
+#     def configure_location(self):
+#         """Configures correct locations for this arena"""
+#         # Run superclass first
+#         super().configure_location()
+
+#         # Define start position for drawing the line
+
+#         marker = CurvedSurfaceObject(name="marker_name")
+#         # Manually add this object to the arena xml
+#         self.merge_assets(marker)
+#         table = find_elements(root=self.worldbody, tags="body", attribs={"name": "table"}, return_first=True)
+#         table.append(marker.get_obj())
+
+#     def reset_arena(self, sim):
+#         """
+#         Reset the visual marker locations in the environment. Requires @sim (MjSim) reference to be passed in so that
+#         the Mujoco sim can be directly modified
+
+#         Args:
+#             sim (MjSim): Simulation instance containing this arena and visual markers
+#         """
+#         # Sample new initial position and direction for generated marker paths
+#         return np.array([0,0])
+
+
+# import numpy as np
+
+# from robosuite.models.arenas import TableArena
+# from robosuite.models.objects import CylinderObject, BottleObject, CurvedSurfaceObject
+# from robosuite.utils.mjcf_utils import CustomMaterial, find_elements
+
+
+# class WipeArena(TableArena):
     """
     Workspace that contains an empty table with visual markers on its surface.
 
@@ -186,3 +254,5 @@ class WipeArena(TableArena):
 
         # Return this newly sampled position
         return np.array((posnew0, posnew1))
+
+

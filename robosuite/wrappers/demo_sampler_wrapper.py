@@ -163,7 +163,7 @@ class DemoSamplerWrapper(Wrapper):
 
             # force simulator state to one from the demo
             self.sim.set_state_from_flattened(state)
-            self.sim.forward()
+            self.sim()
 
             return self.env._get_observation()
 

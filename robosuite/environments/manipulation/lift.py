@@ -10,6 +10,16 @@ from robosuite.utils.mjcf_utils import CustomMaterial
 from robosuite.utils.observables import Observable, sensor
 from robosuite.utils.placement_samplers import UniformRandomSampler
 from robosuite.utils.transform_utils import convert_quat
+from robosuite.models.objects import (
+    CurvedSurfaceObject,
+    BreadVisualObject,
+    CanObject,
+    CanVisualObject,
+    CerealObject,
+    CerealVisualObject,
+    MilkObject,
+    MilkVisualObject,
+)
 
 
 class Lift(SingleArmEnv):
@@ -242,11 +252,11 @@ class Lift(SingleArmEnv):
         elif self.reward_shaping:
 
             # reaching reward
-            cube_pos = self.sim.data.body_xpos[self.cube_body_id]
-            gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
-            dist = np.linalg.norm(gripper_site_pos - cube_pos)
-            reaching_reward = 1 - np.tanh(10.0 * dist)
-            reward += reaching_reward
+            # cube_pos = self.sim.data.body_xpos[self.cube_body_id]
+            # gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
+            # dist = np.linalg.norm(gripper_site_pos - cube_pos)
+            # reaching_reward = 1 - np.tanh(10.0 * dist)
+            # reward += reaching_reward
 
             # grasping reward
             if self._check_grasp(gripper=self.robots[0].gripper, object_geoms=self.cube):
@@ -296,11 +306,13 @@ class Lift(SingleArmEnv):
         )
         self.cube = BoxObject(
             name="cube",
-            size_min=[0.020, 0.020, 0.020],  # [0.015, 0.015, 0.015],
-            size_max=[0.022, 0.022, 0.022],  # [0.018, 0.018, 0.018])
+            size_min=[.01, .01, .01],  # [0.015, 0.015, 0.015],
+            size_max=[.01, .01, .01],  # [0.018, 0.018, 0.018])
             rgba=[1, 0, 0, 1],
             material=redwood,
         )
+        
+        # self.cube = CurvedSurfaceObject("Curved_Surface")
 
         # Create placement initializer
         if self.placement_initializer is not None:
@@ -310,11 +322,11 @@ class Lift(SingleArmEnv):
             self.placement_initializer = UniformRandomSampler(
                 name="ObjectSampler",
                 mujoco_objects=self.cube,
-                x_range=[-0.03, 0.03],
-                y_range=[-0.03, 0.03],
+                x_range=[0, 0],
+                y_range=[0, 0],
                 rotation=None,
                 ensure_object_boundary_in_range=False,
-                ensure_valid_placement=True,
+                ensure_valid_placement=False,
                 reference_pos=self.table_offset,
                 z_offset=0.01,
             )
@@ -325,7 +337,7 @@ class Lift(SingleArmEnv):
             mujoco_robots=[robot.robot_model for robot in self.robots],
             mujoco_objects=self.cube,
         )
-
+        print(self.model.mujoco_arena.table_offset[2])
     def _setup_references(self):
         """
         Sets up references to important components. A reference is typically an

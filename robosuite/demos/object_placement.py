@@ -14,6 +14,18 @@ from robosuite.models import MujocoWorldBase
 from robosuite.models.arenas.table_arena import TableArena
 from robosuite.models.grippers import PandaGripper, RethinkGripper
 from robosuite.models.objects import BoxObject
+from robosuite.models.objects import (
+    BottleObject,
+    BreadVisualObject,
+    CanObject,
+    CanVisualObject,
+    CerealObject,
+    CerealVisualObject,
+    MilkObject,
+    MilkVisualObject,
+    CurvedSurfaceObject
+
+)
 from robosuite.utils import OpenCVRenderer
 from robosuite.utils.binding_utils import MjRenderContextOffscreen, MjSim
 from robosuite.utils.mjcf_utils import new_actuator, new_joint
@@ -24,9 +36,12 @@ if __name__ == "__main__":
     world = MujocoWorldBase()
 
     # add a table
-    arena = TableArena(table_full_size=(0.4, 0.4, 0.05), table_offset=(0, 0, 1.1), has_legs=False)
+    arena = TableArena(table_full_size=(0.1, 0.1, 0.05), table_offset=(0, 0, 1.1), has_legs=False)
+    bottle = MilkVisualObject(name="Milk").get_obj()
+    bottle.set("pos", "0 0 1.3")
+    bottle.set("quat", "0 0 1 0")
     world.merge(arena)
-
+    world.worldbody.append(bottle)
     # add a gripper
     gripper = RethinkGripper()
     # Create another body with a slider joint to which we'll add this gripper
@@ -64,7 +79,7 @@ if __name__ == "__main__":
 
     # start simulation
     model = world.get_model(mode="mujoco")
-    
+
     sim = MjSim(model)
     viewer = OpenCVRenderer(sim)
     render_context = MjRenderContextOffscreen(sim, device_id=-1)
@@ -129,6 +144,5 @@ if __name__ == "__main__":
         # Step through sim
         sim.step()
         sim.data.qfrc_applied[_ref_joint_vel_indexes] = sim.data.qfrc_bias[_ref_joint_vel_indexes]
-        print(sim.data.geom_xmat(mujoco_object))
-        # viewer.render()
+        viewer.render()
         step += 1

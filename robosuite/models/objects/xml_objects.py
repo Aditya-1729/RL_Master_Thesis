@@ -13,7 +13,23 @@ class BottleObject(MujocoXMLObject):
         super().__init__(
             xml_path_completion("objects/bottle.xml"),
             name=name,
-            joints=[dict(type="free", damping="0.0005")],
+            # joints=[dict(type="free", damping="0.0005")],
+            joints=None,
+            obj_type="all",
+            duplicate_collision_geoms=True,
+        )
+
+class CurvedSurfaceObject(MujocoXMLObject):
+    """
+    Bottle object
+    """
+
+    def __init__(self, name):
+        super().__init__(
+            xml_path_completion("objects/curved_surface_2.xml"),
+            name=name,
+            # joints=[dict(type="free", damping="0.5")],
+            joints=None,
             obj_type="all",
             duplicate_collision_geoms=True,
         )

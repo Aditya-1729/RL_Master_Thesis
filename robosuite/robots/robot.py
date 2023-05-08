@@ -115,7 +115,7 @@ class Robot(object):
         """
         self.sim = sim
 
-    def reset(self, deterministic=False):
+    def reset(self, deterministic=True):
         """
         Sets initial pose of arm and grippers. Overrides robot joint configuration if we're using a
         deterministic reset (e.g.: hard reset from xml file)
