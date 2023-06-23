@@ -19,6 +19,49 @@ class BottleObject(MujocoXMLObject):
         )
 
 
+class Flat_top(MujocoXMLObject):
+    """
+    Polishing object
+    """
+    def __init__(self, name):
+        super().__init__(
+            xml_path_completion("objects/flat_top.xml"),
+            name=name,
+            # joints=[dict(type="free", damping="0.5")],
+            joints=None,
+            obj_type="all",
+            duplicate_collision_geoms=True,
+        )
+
+class Incline(MujocoXMLObject):
+    """
+    Polishing object
+    """
+    def __init__(self, name):
+        super().__init__(
+            xml_path_completion("objects/incline_30.xml"),
+            name=name,
+            # joints=[dict(type="free", damping="0.5")],
+            joints=None,
+            obj_type="all",
+            duplicate_collision_geoms=True,
+        )
+
+class CurvedSurfaceObject(MujocoXMLObject):
+    """
+    Polishing object
+    """
+
+    def __init__(self, name):
+        super().__init__(
+            xml_path_completion("objects/curved_surface_2.xml"),
+            name=name,
+            # joints=[dict(type="free", damping="0.5")],
+            joints=None,
+            obj_type="all",
+            duplicate_collision_geoms=True,
+        )
+
 class CanObject(MujocoXMLObject):
     """
     Coke can object (used in PickPlace)

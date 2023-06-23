@@ -482,7 +482,12 @@ class MujocoEnv(metaclass=EnvMeta):
         object_names = {object_names} if type(object_names) is str else set(object_names)
         for obj in self.model.mujoco_objects:
             if obj.name in object_names:
-                self.sim.data.set_joint_qpos(obj.joints[0], np.array((10, 10, 10, 1, 0, 0, 0)))
+                #adding try and except because our object doesnt have joint and this is called for reset
+                try:
+                    self.sim.data.set_joint_qpos(obj.joints[0], np.array((10, 10, 10, 1, 0, 0, 0)))
+                except: 
+                    body_id = self.sim.model.body_name2id(obj.root_body)
+                    self.sim.model.body_pos[body_id] = np.array((10, 10, 10))
 
     def visualize(self, vis_settings):
         """
