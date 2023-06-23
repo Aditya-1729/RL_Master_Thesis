@@ -1,3 +1,0 @@
-[submodule "pytorch-soft-actor-critic"]
-	path = pytorch-soft-actor-critic
-	url = https://github.com/pranz24/pytorch-soft-actor-critic.git
