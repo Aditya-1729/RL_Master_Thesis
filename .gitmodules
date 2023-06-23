@@ -1,0 +1,6 @@
+[submodule "pytorch-soft-actor-critic"]
+	path = pytorch-soft-actor-critic
+	url = https://git.rwth-aachen.de/dsme-projects/grinding_robot/robosuite/pytorch-soft-actor-critic.git
+[submodule "stable-baselines3"]
+	path = stable-baselines3
+	url = https://git.rwth-aachen.de/dsme-projects/grinding_robot/robosuite/stable-baselines3.git
