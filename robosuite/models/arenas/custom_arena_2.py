@@ -1,7 +1,7 @@
 import numpy as np
 
 from robosuite.models.arenas import TableArena
-from robosuite.models.objects import CylinderObject, BottleObject, CurvedSurfaceObject, RedObject
+from robosuite.models.objects import CylinderObject, BottleObject, CurvedSurfaceObject
 from robosuite.utils.mjcf_utils import CustomMaterial, find_elements
 
 

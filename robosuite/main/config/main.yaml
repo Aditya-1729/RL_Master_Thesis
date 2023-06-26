@@ -1,0 +1,49 @@
+# env:
+#   name: "Polishing"
+  
+# env_specs:  
+#   robots: "Panda"
+#   has_renderer: True
+#   has_offscreen_renderer: True
+#   ignore_done: True
+#   use_camera_obs: False
+#   control_freq: 20
+
+# defaults:
+  
+#   - controller: position_var
+#   - task_config: default_polishing_config
+
+# seed: 0
+
+# project: nominal_control_log
+
+# experiment: default
+
+# root_dir: "."
+
+# env:
+#   name: "Polishing"
+  
+# env_specs:  
+#   robots: "Panda"
+#   has_renderer: True
+#   has_offscreen_renderer: True
+#   ignore_done: True
+#   use_camera_obs: False
+#   control_freq: 20
+
+defaults:
+  - env: polishing_render
+  - controller: position_fixed
+  - task_config: force_control_4
+  # - override_obj: polishing_flat
+  # - override_reward: default
+  
+seed: 0
+
+project: nominal_control_log
+
+experiment: default
+
+# root_dir: "."

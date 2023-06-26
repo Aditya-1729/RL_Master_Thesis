@@ -1,0 +1,22 @@
+program: /home/aditya/robosuite/robosuite/main/hydra_sweep.py
+method: random
+metric:
+  name: Wipe/Return
+  goal: maximize
+parameters:
+  Kp_xy: 
+    distribution: 'int_uniform'
+    max: 300
+    min: 0
+  Kp_z: 
+    distribution: 'int_uniform'
+    max: 300
+    min: 0
+  Kd_xy: 
+    distribution: 'int_uniform'
+    max: 10
+    min: 0
+  Kd_z: 
+    distribution: 'int_uniform'
+    max: 10
+    min: 0    
