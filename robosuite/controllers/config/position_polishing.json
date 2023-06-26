@@ -5,7 +5,7 @@
   "output_max": [0.05, 0.05, 0.05],
   "output_min": [-0.05, -0.05, -0.05],
   "kp": 40,
-  "damping_ratio": 3,
+  "damping_ratio": 0.5,
   "impedance_mode": "fixed",
   "kp_limits": [0, 300],
   "damping_ratio_limits": [0, 10],
