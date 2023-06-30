@@ -12,4 +12,4 @@
   control_delta: false
   interpolation: null
   ramp_ratio: 0.2
-  agent_config: 0
+  agent_config: 2

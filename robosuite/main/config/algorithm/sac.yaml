@@ -1,0 +1,22 @@
+model:
+  policy: "MlpPolicy"
+  train_freq: 1
+  verbose: 1
+  tensorboard_log: ".runs/sac_norm_control/"
+  learning_starts: 2000
+  batch_size: 128
+  target_update_interval: 1 #5
+  tau: 0.005
+  target_entropy: "auto"
+  device: "auto"
+  learning_rate: 0.0003
+
+agent:
+  lr_schedule: False
+  lr_critic: 0.0005
+  lr_actor: 0.0001
+
+learn:
+  total_timesteps: 2000000
+  log_interval: 5
+
