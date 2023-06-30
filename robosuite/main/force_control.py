@@ -8,15 +8,17 @@ import wandb
 # wandb.login()
 from omegaconf import DictConfig, OmegaConf
 from hydra import compose, initialize
-
+# from robosuite.wrappers import RL_agent_2
+from robosuite.wrappers import GymWrapper
 
 if __name__ == "__main__":
+    
     initialize(version_base=None, config_path="config/")
     cfg = compose(config_name="main")
     run = wandb.init(
     # Set the project where this run will be logged
-    project="test_reward_log",
-    name='reward4_fcap_10',
+    project="test_nc_wrapper",
+    name='indent_subtraction',
     config=cfg)
     
     # Track hyperparameters and run metadata
@@ -24,11 +26,14 @@ if __name__ == "__main__":
     # initialize(version_base=None, config_path="config/")
     # cfg = compose(config_name="main")
     # default_config = OmegaConf.to_yaml(cfg)
-    config = wandb.config
-    env = suite.make(env_name=cfg.env.name,
+    # config = wandb.config
+    env = GymWrapper(
+        suite.make(env_name=cfg.env.name,
                     **cfg.env.specs,
                     task_config = OmegaConf.to_container(cfg.task_config),
                     controller_configs=OmegaConf.to_container(cfg.controller))
+                    
+    )
     #impedence mode and control delta
 
     # initialize the task
@@ -46,33 +51,35 @@ if __name__ == "__main__":
     sites = cycle(env.objs[0].sites)
     site = env.objs[0].sites[0]
     site_pos = env.sim.data.site_xpos[env.sim.model.site_name2id(site)]
+    # action = np.array((0.15,-0.2,0.945))
+    # action = np.array((3,3,3, 40,40,40))
     action = np.array((0.15,-0.2,0.945))
     while site!=env.objs[0].sites[-1]:
         a = site_pos
         t+=1
-        action[:2] = a[:2]
-        action[-1] = a[-1] - indent
+        # action[:2] = a[:2]
+        # action[-1] = a[-1] - indent
         eef_pos = env.sim.data.site_xpos[env.robots[0].eef_site_id]
-        # action[:2] = eef_pos[:2] + np.clip(a[:2]-eef_pos[:2], a_min=np.array([-0.01, -0.01]), a_max=np.array([0.01, 0.01]))
-        # action[-1] = eef_pos[-1] + np.clip(a[-1] - indent - eef_pos[-1], a_min = -0.01, a_max=0.01) 
+        action[:2] = eef_pos[:2] + np.clip(a[:2]-eef_pos[:2], a_min=np.array([-0.015, -0.015]), a_max=np.array([0.015, 0.01]))
+        action[-1] = eef_pos[-1] + np.clip(a[-1] - indent - eef_pos[-1], a_min = -0.015, a_max=0.015) 
         # total_force = np.linalg.norm(np.array(env.robots[0].recent_ee_forcetorques.current[:3]))
         total_force = np.linalg.norm(env.robots[0].ee_force)
         # total_moment = np.linalg.norm(np.array(env.robots[0].recent_ee_forcetorques.current[:-3]))
-        if total_force>1:
-            t_contact+=1
+        # if total_force>1:
+            # t_contact+=1
         # if env.sim.data.ncon >=4:
         #     t_contact+=1
         # print(action)
-        obs, reward, done, info = env.step(action)
+        obs, reward, done, _, info = env.step(action)
         # env.render()
-
-        eef_pos = obs["robot0_eef_pos"]
+        # print(obs)
+        eef_pos = env._eef_xpos
         # print(f"eef_pos:{eef_pos}")
         delta = eef_pos - site_pos
 
         dist = np.linalg.norm(delta)
         Return +=reward
-        Return_unnormalized +=env.un_normalized_reward
+        # Return_unnormalized +=env.un_normalized_reward
         metrics = { 'Wipe/reward': reward,
                         'Wipe/Return': Return,
                         'Wipe/force': total_force,
@@ -96,12 +103,14 @@ if __name__ == "__main__":
         if dist < dist_th:
             print ("wiped: {}, distance: {}, Return: {}, timesteps: {}, force : {}".format(site, dist, Return, t, total_force))
             site = next(sites)
+            # print(len(env.wiped_markers))
             # print(f"robot_joint_pos: {obs['robot0_joint_pos']}")
             # print(f"robot_joint_pos: {env.robots[0]._joint_positions}")
             site_pos = env.sim.data.site_xpos[env.sim.model.site_name2id(site)]
-        if env.task_completion_r: #removed horizon limit
-            # env.reset()
+        if done: #removed horizon limit
+            print(done)
             break
+    env.close()
     wandb.finish()
 
 

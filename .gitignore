@@ -115,3 +115,9 @@ mjkey.txt
 
 # private macros
 macros_private.py
+
+#wandb
+/wandb
+
+#logs
+/logs

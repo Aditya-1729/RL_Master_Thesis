@@ -4,6 +4,7 @@ from robosuite.wrappers.demo_sampler_wrapper import DemoSamplerWrapper
 from robosuite.wrappers.domain_randomization_wrapper import DomainRandomizationWrapper
 from robosuite.wrappers.visualization_wrapper import VisualizationWrapper
 from robosuite.wrappers.nominal_control_wrapper import Nominal_controller_gym
+from robosuite.wrappers.rl_agent_2 import RL_agent_2
 try:
     from robosuite.wrappers.gym_wrapper import GymWrapper
 except:

@@ -35,10 +35,11 @@
 
 defaults:
   - env: polishing_render
-  - controller: position_fixed
+  - controller: position_fixed #position_var_sweep
   - task_config: force_control_4
   # - override_obj: polishing_flat
   # - override_reward: default
+  - _self_
   
 seed: 0
 

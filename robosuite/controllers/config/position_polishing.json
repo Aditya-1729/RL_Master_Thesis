@@ -5,12 +5,12 @@
   "output_max": [0.05, 0.05, 0.05],
   "output_min": [-0.05, -0.05, -0.05],
   "kp": 40,
-  "damping_ratio": 0.5,
+  "damping_ratio": 3,
   "impedance_mode": "fixed",
   "kp_limits": [0, 300],
   "damping_ratio_limits": [0, 10],
   "position_limits": null,
-  "control_delta": false,
+  "control_delta": true,
   "interpolation": null,
   "ramp_ratio": 0.2
 }

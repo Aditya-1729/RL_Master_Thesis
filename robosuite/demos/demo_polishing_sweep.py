@@ -48,9 +48,11 @@ def objective(config):
         t+=1
         action[:2] = config.Kd_xy
         action[2] = config.Kd_z
-        action[2:4] = config.Kp_xy
-        action[5] = config.Kp_z
-        action[6:8] = a[:2]
+        action[3:6] = config.Kd_xy
+        action[6:8]= config.Kp_xy
+        action[8] = config.Kp_z
+        action[9:12] = config.Kp_xy
+        action[12:14] = a[:2]
         action[-1] = a[-1] - indent
  
 

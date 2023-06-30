@@ -23,8 +23,8 @@ if __name__ == "__main__":
     )
     dist_th = 0.01
     indent=0.001
-    writer = SummaryWriter('/home/aditya/robosuite/robosuite/runs/kp_{kp}_kd_{kd}_th_{th}_in_{ind}'.format(kp=controller_config['kp'], \
-                            kd=controller_config['damping_ratio'], th=dist_th, ind=indent))
+    # writer = SummaryWriter('/home/aditya/robosuite/robosuite/runs/kp_{kp}_kd_{kd}_th_{th}_in_{ind}'.format(kp=controller_config['kp'], \
+    #                         kd=controller_config['damping_ratio'], th=dist_th, ind=indent))
     # env.reset()
     # env.viewer.set_camera(camera_id=0)
 

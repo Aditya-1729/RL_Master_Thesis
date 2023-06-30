@@ -62,6 +62,7 @@ if __name__ == "__main__":
             env.render()
             action = env.action_space.sample()
             print(f"pre_controller:{action}")
+            print(f"eef_z:{env.sim.data.site_xpos[env.robots[0].eef_site_id][-1]}")
             observation, reward, terminated, truncated, info = env.step(action)
             # print(f"post_controller:{action}")
             if terminated or truncated:

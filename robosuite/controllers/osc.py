@@ -128,6 +128,7 @@ class OperationalSpaceController(Controller):
         control_ori=True,
         control_delta=True,
         uncouple_pos_ori=True,
+        agent_config=0,
         **kwargs,  # does nothing; used so no error raised when dict is passed with extra terms used previously
     ):
 
@@ -171,6 +172,9 @@ class OperationalSpaceController(Controller):
 
         # Impedance mode
         self.impedance_mode = impedance_mode
+
+        #agent_config
+        self.agent_config = agent_config
 
         # Add to control dim based on impedance_mode
         if self.impedance_mode == "variable":
@@ -234,7 +238,8 @@ class OperationalSpaceController(Controller):
         # If we're using deltas, interpret actions as such
         if self.use_delta:
             if delta is not None:
-                scaled_delta = self.scale_action(delta)
+                # scaled_delta = self.scale_action(delta) #TODO changing this:
+                scaled_delta=delta
                 if not self.use_ori and set_ori is None:
                     # Set default control for ori since user isn't actively controlling ori
                     set_ori = np.array([[0.0, 1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, -1.0]])
@@ -401,9 +406,12 @@ class OperationalSpaceController(Controller):
         if self.impedance_mode == "variable":
             low = np.concatenate([self.damping_ratio_min, self.kp_min, self.input_min])
             high = np.concatenate([self.damping_ratio_max, self.kp_max, self.input_max])
-        elif self.impedance_mode == "variable_kp":
+        if self.impedance_mode == "variable_kp":
             low = np.concatenate([self.kp_min, self.input_min])
             high = np.concatenate([self.kp_max, self.input_max])
+        if self.agent_config == 2:
+            low = np.concatenate([low[:3], low[6:9]])
+            high = np.concatenate([high[:3], high[6:9]])
         else:  # This is case "fixed"
             low, high = self.input_min, self.input_max
         return low, high

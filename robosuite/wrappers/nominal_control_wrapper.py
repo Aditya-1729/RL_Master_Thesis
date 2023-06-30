@@ -119,13 +119,16 @@ class Nominal_controller_gym(Wrapper, gym.Env):
         
         '''
         print(f"pre_controller:{action}")
-        site=self.env.objs[0].sites[7]
+        site=self.env.objs[0].sites[8]
         site_pos = self.env.sim.data.site_xpos[self.env.sim.model.site_name2id(site)]
         # print(f"site_pos")
+        print(f"site_pos_z:{site_pos[-1]}")
         eef_pos = self.env.sim.data.site_xpos[self.env.robots[0].eef_site_id]
+        # action[:2] = site_pos[:2] - eef_pos[:2] 
+        action[-1] = site_pos[-1] - eef_pos[-1] - self.indent
         # action[:2] = a[:2] 
-        action[:2] = eef_pos[:2] + np.clip(site_pos[:2]-eef_pos[:2], a_min=np.array([-0.01, -0.01]), a_max=np.array([0.01, 0.01]))
-        action[-1] = eef_pos[-1] + np.clip(site_pos[-1] - self.indent - eef_pos[-1], a_min = -0.01, a_max=0.01)
+        action[:2] = np.clip(site_pos[:2]-eef_pos[:2], a_min=np.array([-0.01, -0.01]), a_max=np.array([0.01, 0.01])) #eef_pos[:2] + 
+        action[-1] = np.clip(site_pos[-1] - self.indent - eef_pos[-1], a_min = -0.01, a_max=0.01) #eef_pos[-1] +
         print(f"post_controller:{action}")
         ob_dict, reward, terminated, info = self.env.step(action)
         return self._flatten_obs(ob_dict), reward, terminated, False, info

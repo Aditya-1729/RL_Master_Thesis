@@ -231,10 +231,12 @@ class SingleArm(Manipulator):
         """
 
         # clip actions into valid range
+        '''
         assert len(action) == self.action_dim, "environment got invalid action dimension -- expected {}, got {}".format(
             self.action_dim, len(action)
         )
-
+        '''
+        
         gripper_action = None
         if self.has_gripper:
             gripper_action = action[self.controller.control_dim :]  # all indexes past controller dimension indexes

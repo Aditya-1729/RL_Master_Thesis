@@ -188,8 +188,8 @@ class Polishing(SingleArmEnv):
         render_visual_mesh=True,
         render_gpu_device_id=-1,
         control_freq=20,
-        horizon=1000,
-        _max_episode_steps = 1000,
+        horizon=1500,
+        _max_episode_steps = 1500,
         ignore_done=False,
         hard_reset=False,
         camera_names="agentview",
@@ -1012,13 +1012,13 @@ class Polishing(SingleArmEnv):
             if self.print_results:
                 print(40 * "-" + " COLLIDED " + 40 * "-")
             terminated = True
-        '''
+        
         # Prematurely terminate if task is success
         if self._check_success():
             if self.print_results:
                 print(40 * "+" + " FINISHED WIPING " + 40 * "+")
             terminated = True
-        '''
+        
         # Prematurely terminate if contacting the table with the arm
         if self.robots[0].check_q_limits():
             if self.print_results:

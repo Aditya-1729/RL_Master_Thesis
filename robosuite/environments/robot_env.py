@@ -571,15 +571,17 @@ class RobotEnv(MujocoEnv):
         Raises:
             AssertionError: [Invalid action dimension]
         """
+
         # Verify that the action is the correct dimension
+        '''
         assert len(action) == self.action_dim, "environment got invalid action dimension -- expected {}, got {}".format(
             self.action_dim, len(action)
         )
-
+        '''
         # Update robot joints based on controller actions
         cutoff = 0
         for idx, robot in enumerate(self.robots):
-            robot_action = action[cutoff : cutoff + robot.action_dim]
+            robot_action = action #[cutoff : cutoff + robot.action_dim] #Big change
             robot.control(robot_action, policy_step=policy_step)
             cutoff += robot.action_dim
 
