@@ -32,7 +32,7 @@ class RL_agent_2(Wrapper, gym.Env):
         # Create name for gym
         robots = "".join([type(robot.robot_model).__name__ for robot in self.env.robots])
         self.name = robots + "_" + type(self.env).__name__
-        
+        self.position_limits = cfg.task_config.position_limits
         #configuration parameters
         self.indent = cfg.task_config.indent
         # self.agent_config = cfg.agent_config
@@ -136,8 +136,8 @@ class RL_agent_2(Wrapper, gym.Env):
         a[6:8]= action[3:5]
         a[8] = action[5]
         a[9:12] = self.kp
-        a[12:14] = eef_pos[:2] + np.clip(self.site_pos[:2]-eef_pos[:2], a_min=np.array([-0.01, -0.01]), a_max=np.array([0.01, 0.01]))
-        a[-1] = eef_pos[-1] + np.clip(self.site_pos[-1] - self.indent - eef_pos[-1], a_min = -0.01, a_max=0.01)
+        a[12:14] = eef_pos[:2] + np.clip(self.site_pos[:2]-eef_pos[:2], a_min=np.array([-self.position_limits, -self.position_limits]), a_max=np.array([self.position_limits, self.position_limits]))
+        a[-1] = eef_pos[-1] + np.clip(self.site_pos[-1] - self.indent - eef_pos[-1], a_min = -self.position_limits, a_max=self.position_limits)
         # print(f"post: {a}")
         # if self.agent_config==3:
 

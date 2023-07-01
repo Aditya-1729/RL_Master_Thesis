@@ -40,3 +40,4 @@ force_multiplier: 5 # 0.5
 dist_th: 0.01
 indent: 0.003
 reward_mode: 2
+position_limits: 0.01
