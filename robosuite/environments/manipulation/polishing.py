@@ -623,6 +623,12 @@ class Polishing(SingleArmEnv):
 
                 else:
                     self.wipe_contact_r=0
+                
+                #penalty to encode progress in position
+                goal_pos = self.sim.data.site_xpos[self.sim.model.site_name2id(self.objs[0].sites[8])]
+                total_distance=np.linalg.norm(self._eef_xpos - goal_pos)
+                self.total_dist_reward = np.tanh(total_distance)
+                reward-=self.total_dist_reward
 
                 # Penalize large accelerations
                 reward -= self.ee_accel_penalty * np.mean(abs(self.robots[0].recent_ee_acc.current))            

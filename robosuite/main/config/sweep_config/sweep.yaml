@@ -1,22 +1,14 @@
-program: /home/aditya/robosuite/robosuite/main/hydra_sweep.py
-method: random
+program: /hpcwork/ru745256/master_thesis/30_6/robosuite/robosuite/main/sweep_orientation.py
+method: bayes
 metric:
   name: Wipe/Return
   goal: maximize
 parameters:
-  Kp_xy: 
+  Kp_or: 
     distribution: 'int_uniform'
     max: 300
     min: 0
-  Kp_z: 
-    distribution: 'int_uniform'
-    max: 300
-    min: 0
-  Kd_xy: 
+  Kd_or: 
     distribution: 'int_uniform'
     max: 10
-    min: 0
-  Kd_z: 
-    distribution: 'int_uniform'
-    max: 10
-    min: 0    
+    min: 0  

@@ -2,7 +2,7 @@ model:
   policy: "MlpPolicy"
   train_freq: 1
   verbose: 1
-  tensorboard_log: ".runs/sac_norm_control/GPU-HPC/"
+  tensorboard_log: ".runs/sac_norm_control/GPU-HPC/h1500"
   learning_starts: 2000
   batch_size: 128
   target_update_interval: 5 #5
@@ -16,7 +16,7 @@ eval:
   eval_freq: 10000
   deterministic: True
   render: False 
-  best_model_save_path: './logs/gpu'
+  best_model_save_path: './logs/gpu_h1500'
 
 agent:
   lr_schedule: False

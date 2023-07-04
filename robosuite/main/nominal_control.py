@@ -1,4 +1,9 @@
-# Manipulation environments
+"""
+for polished fixed controller config
+3 dim action input
+takes controller config from robosuite and not hydra as input
+some (maybe usefeul) print utitlies commented out
+"""
 from robosuite.controllers import load_controller_config
 from robosuite.utils.input_utils import *
 from itertools import cycle
