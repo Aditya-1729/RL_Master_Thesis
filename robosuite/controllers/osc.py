@@ -139,7 +139,6 @@ class OperationalSpaceController(Controller):
         )
         # Determine whether this is pos ori or just pos
         self.use_ori = control_ori
-
         # Determine whether we want to use delta or absolute values as inputs
         self.use_delta = control_delta
 
@@ -154,7 +153,8 @@ class OperationalSpaceController(Controller):
         self.output_min = self.nums2array(output_min, self.control_dim)
 
         # kp kd
-        self.kp = self.nums2array(kp, 6)
+        # self.kp = self.nums2array(kp, 6)
+        self.kp = np.concatenate([self.nums2array(kp, 3),self.nums2array(1,3)])
         self.kd = 2 * np.sqrt(self.kp) * damping_ratio
 
         # kp and kd limits
@@ -310,6 +310,7 @@ class OperationalSpaceController(Controller):
         else:
             desired_ori = np.array(self.goal_ori)
             ori_error = orientation_error(desired_ori, self.ee_ori_mat)
+            ori_error = np.matmul(self.ee_ori_mat,ori_error)
 
         # Compute desired force and torque based on errors
         position_error = desired_pos - self.ee_pos
@@ -340,16 +341,25 @@ class OperationalSpaceController(Controller):
         else:
             desired_wrench = np.concatenate([desired_force, desired_torque])
             decoupled_wrench = np.dot(lambda_full, desired_wrench)
-
+        self.decoupled_wrench = decoupled_wrench[:3]
+        self.desired_force = desired_force
         # Gamma (without null torques) = J^T * F + gravity compensations
-        self.torques = np.dot(self.J_full.T, decoupled_wrench) + self.torque_compensation
-
+        # self.torques = np.dot(self.J_full.T, decoupled_wrench) + self.torque_compensation
+        self.torques = np.dot(self.J_full.T, np.concatenate([desired_force,desired_torque])) + self.torque_compensation
         # Calculate and add nullspace torques (nullspace_matrix^T * Gamma_null) to final torques
         # Note: Gamma_null = desired nullspace pose torques, assumed to be positional joint control relative
         #                     to the initial joint positions
-        self.torques += nullspace_torques(
-            self.mass_matrix, nullspace_matrix, self.initial_joint, self.joint_pos, self.joint_vel
-        )
+        # self.torques+= np.eye(7) - np.matmul(np.matmul(self.J_full.transpose(),np.linalg.pinv(self.J_full.transpose())),(np.eye(7)*10)*np.array([self.initial_joint- self.joint_pos])) #- (np.eye(7)*2*np.sqrt(10))*self.joint_vel
+        ## ros_example controller nullspace formulation
+        
+        # self.eq_q = np.array([0.07955885,  0.75446712, -0.0786964,  -2.04688355,  0.20700744,  2.75950145,
+        #     0.59211654])
+        self.eq_q=np.array([ 0.29967226,  0.7752009,   0.02467113, -2.00475776,  0.22705841,  2.79772419,
+            0.83413369])
+        self.torques+=np.matmul(np.eye(7) - np.matmul(self.J_full.transpose(),np.linalg.pinv(self.J_full.transpose())),np.matmul((np.eye(7)*1),(np.array(self.eq_q- self.joint_pos)))) - np.matmul((np.eye(7)*2*np.sqrt(1)),np.array(self.joint_vel))
+        # self.torques += nullspace_torques(
+        #     self.mass_matrix, nullspace_matrix, self.initial_joint, self.joint_pos, self.joint_vel
+        # )
 
         # Always run superclass call for any cleanups at the end
         super().run_controller()

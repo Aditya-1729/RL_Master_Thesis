@@ -7,9 +7,9 @@ if __name__ == "__main__":
 
     # initialize the task
     env = suite.make(
-        env_name= "CustomWipe",
+        env_name= "Polishing",
         robots= "Panda",
-        controller_configs= load_controller_config(custom_fpath='/home/aditya/robosuite/robosuite/controllers/config/osc_position.json'),
+        controller_configs= load_controller_config(custom_fpath='/home/aditya/robosuite/robosuite/controllers/config/joint_position.json'),
         has_renderer=True,
         has_offscreen_renderer=True,
         ignore_done=True,
@@ -27,9 +27,13 @@ if __name__ == "__main__":
     # do visualization
     for i in range(1000):
         # action = np.random.uniform(low, high)
-        action=np.array([0, -0.05, -0.1])
+        # action=np.array([0, -0.785398163397, 0, -2.35619449019, 0, 1.57079632679, 0.785398163397])
+        # action=np.array([0, np.pi / 16.0, 0.00, -np.pi / 2.0 - np.pi / 3.0, 0.00, np.pi - 0.2, np.pi / 4])
+        action = np.array([0, 0, 0.00, 0, 0.00, 0, 0])
+
         obs, reward, done, _ = env.step(action)
-        print(obs["robot0_eef_pos"][2])
+        print(f"mass_matrix:{env.robots[0].controller.mass_matrix}")
+        # print(obs["robot0_eef_pos"][2])
         env.render()
 ''' 
     env.reset()
