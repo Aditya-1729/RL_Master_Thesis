@@ -1,0 +1,14 @@
+# env:
+name: "Polishing"
+  
+specs:  
+  robots: "Panda"
+  has_renderer: True
+  has_offscreen_renderer: True
+  ignore_done: True
+  use_camera_obs: False
+  control_freq: 20
+  camera_names: "frontview"
+  camera_heights: 1024
+  camera_widths: 1024 
+  
