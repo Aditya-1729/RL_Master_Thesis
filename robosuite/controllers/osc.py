@@ -153,8 +153,8 @@ class OperationalSpaceController(Controller):
         self.output_min = self.nums2array(output_min, self.control_dim)
 
         # kp kd
-        # self.kp = self.nums2array(kp, 6)
-        self.kp = np.concatenate([self.nums2array(kp, 3),self.nums2array(1,3)])
+        self.kp = self.nums2array(kp, 6)
+        # self.kp = np.concatenate([self.nums2array(kp, 3),self.nums2array(2,3)])
         self.kd = 2 * np.sqrt(self.kp) * damping_ratio
 
         # kp and kd limits
@@ -310,10 +310,10 @@ class OperationalSpaceController(Controller):
         else:
             desired_ori = np.array(self.goal_ori)
             ori_error = orientation_error(desired_ori, self.ee_ori_mat)
-            ori_error = np.matmul(self.ee_ori_mat,ori_error)
+            # ori_error = np.matmul(self.ee_ori_mat,ori_error)
 
         # Compute desired force and torque based on errors
-        position_error = desired_pos - self.ee_pos
+        position_error =  desired_pos - self.ee_pos
         vel_pos_error = -self.ee_pos_vel
 
         # F_r = kp * pos_err + kd * vel_err

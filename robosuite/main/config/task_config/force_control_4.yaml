@@ -12,7 +12,7 @@ safe_force_low: 1
 safe_force_high: 5
 force_in_window_mul: 0.012 #0.0011 
 
-distance_multiplier: 10.0  # multiplier for the dense reward inversely proportional to the mean location of the pegs to wipe
+distance_multiplier: 1  # multiplier for the dense reward inversely proportional to the mean location of the pegs to wipe
 distance_th_multiplier: 5.0  # multiplier in the tanh function for the aforementioned reward
 # settings for table top
 table_full_size: [0.5, 0.8, 0.05]  # Size of tabletop
@@ -40,5 +40,6 @@ use_condensed_obj_obs: True  # Whether to use condensed object observation repre
 no_contact_penalty: 0
 force_multiplier: 5 # 0.5
 dist_th: 0.01
-indent: 0.003
-reward_mode: 2
+indent: 0.010
+reward_mode: 4
+clip: 0.02

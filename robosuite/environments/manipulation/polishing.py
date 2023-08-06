@@ -287,7 +287,7 @@ class Polishing(SingleArmEnv):
 
 
         # ee resets
-        self.ee_force_bias = np.zeros(3)
+        self.ee_force_bias = np.array([0,0,-6.9482]) #weight of eef
         self.ee_torque_bias = np.zeros(3)
 
         # set other wipe-specific attributes
@@ -715,6 +715,13 @@ class Polishing(SingleArmEnv):
                 else:
                     self.wipe_contact_r=0
 
+                #progress reward
+                goal_pos = self.sim.data.site_xpos[self.sim.model.site_name2id(self.objs[0].sites[8])]
+                total_distance=np.linalg.norm(self._eef_xpos - goal_pos)
+                self.total_dist_reward = self.distance_multiplier*np.tanh(total_distance)
+                reward-=self.total_dist_reward
+
+
                 # Penalize large accelerations
                 reward -= self.ee_accel_penalty * np.mean(abs(self.robots[0].recent_ee_acc.current))
             
@@ -722,8 +729,6 @@ class Polishing(SingleArmEnv):
                 # print("completed_task")
                 self.task_completion_r = self.task_complete_reward
                 # reward += self.task_complete_reward
-
-
 
 
         # Printing results
