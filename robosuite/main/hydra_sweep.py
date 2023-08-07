@@ -40,16 +40,19 @@ if __name__ == "__main__":
     site = env.objs[0].sites[0]
     site_pos = env.sim.data.site_xpos[env.sim.model.site_name2id(site)]
 
-    action = np.array((3,3,3,3,3,3, 40,40,40,40, 40, 40, 0.15,-0.2,0.945))
+    action = np.empty(15,)
     while site!=env.objs[0].sites[-1]:
         a = site_pos
         t+=1
+        action = np.empty(15,)
         action[:2] = config.Kd_xy
         action[2] = config.Kd_z
-        action[3:6] = config.Kd_xy
+        action[3:5] = config.Kd_or_xy
+        action[5] = config.Kd_or_z
         action[6:8]= config.Kp_xy
         action[8] = config.Kp_z
-        action[9:12] = config.Kp_xy
+        action[9:11] = config.Kp_or_xy
+        action[11] = config.Kp_or_z
         action[12:14] = a[:2]
         action[-1] = a[-1] - indent
 
@@ -82,7 +85,7 @@ if __name__ == "__main__":
             print ("wiped: {}, distance: {}, Return: {}, timesteps: {}, moment : {}".format(site, dist, Return, t, np.array(env.robots[0].recent_ee_forcetorques.current[:-3])))
             site = next(sites)
             site_pos = env.sim.data.site_xpos[env.sim.model.site_name2id(site)]
-        if t>200 or env.task_completion_r:
+        if t>2000 or env.task_completion_r:
             env.reset()
             # env.close()
             break

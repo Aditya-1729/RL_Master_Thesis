@@ -12,7 +12,7 @@ import imageio
 
 
 if __name__ == "__main__":
-    use_wandb=False
+    use_wandb=True
 
     initialize(version_base=None, config_path="config/")
     cfg = compose(config_name="main")
@@ -20,7 +20,7 @@ if __name__ == "__main__":
         run = wandb.init(
         # Set the project where this run will be logged
         project="test_ros_osc",
-        name='new_ee_new_robot_i=0.01_dist',
+        name='reward_4',
         config=cfg) 
         config = wandb.config
     
@@ -72,7 +72,7 @@ if __name__ == "__main__":
         # print(obs)
         # frame = obs[cfg.env.specs.camera_names + "_image"]
         # writer.append_data(frame)
-        env.render()
+        # env.render()
 
         eef_pos = obs["robot0_eef_pos"]
         # print(f"eef_pos:{eef_pos}")

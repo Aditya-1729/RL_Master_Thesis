@@ -1,5 +1,5 @@
 program: /home/aditya/robosuite/robosuite/main/hydra_sweep.py
-method: random
+method: bayes
 metric:
   name: Wipe/Return
   goal: maximize
@@ -12,6 +12,12 @@ parameters:
     distribution: 'int_uniform'
     max: 300
     min: 0
+  Kp_or_xy: 
+    distribution: 'int_uniform'
+    max: 300
+    min: 0
+  Kp_or_z:
+    value: 20  
   Kd_xy: 
     distribution: 'int_uniform'
     max: 10
@@ -19,4 +25,15 @@ parameters:
   Kd_z: 
     distribution: 'int_uniform'
     max: 10
-    min: 0    
+    min: 0
+  Kd_or_xy: 
+    distribution: 'int_uniform'
+    max: 10
+    min: 0
+  Kd_or_z:
+    value: 1
+
+  indent:
+    distribution: 'uniform'
+    max: 0.3
+    min: 0.001  
