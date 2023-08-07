@@ -43,3 +43,4 @@ dist_th: 0.01
 indent: 0.010
 reward_mode: 4
 clip: 0.02
+min_vel: 0.0003

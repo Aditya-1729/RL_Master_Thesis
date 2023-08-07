@@ -12,7 +12,7 @@ import imageio
 
 
 if __name__ == "__main__":
-    use_wandb=True
+    use_wandb=False
 
     initialize(version_base=None, config_path="config/")
     cfg = compose(config_name="main")

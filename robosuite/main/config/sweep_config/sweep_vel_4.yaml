@@ -1,4 +1,5 @@
 program: /hpcwork/ru745256/master_thesis/7_8/robosuite/robosuite/main/hydra_sweep.py
+name: reward_4_vel
 method: bayes
 metric:
   name: Wipe/Return

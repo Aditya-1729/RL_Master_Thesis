@@ -114,3 +114,6 @@ macros_private.py
 
 #wandb
 wandb/*
+
+#logs and outputs
+*.out

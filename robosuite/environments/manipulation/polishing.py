@@ -229,6 +229,9 @@ class Polishing(SingleArmEnv):
         self.reward_mode = self.task_config["reward_mode"]
         self.force_reward = self.force_multiplier*self.target_force
 
+        #vel_threshold
+        self.min_vel = self.task_config["min_vel"]
+
 
         # Final reward computation
         # So that is better to finish that to stay touching the table for 100 steps
@@ -597,7 +600,7 @@ class Polishing(SingleArmEnv):
                 
                 
                 # Reward for keeping contact
-                if self.sim.data.ncon == 5 and self._has_gripper_contact:
+                if self.sim.data.ncon == 5 and self.robots[0]._hand_vel[1]>self.min_vel:
                     # print("contact")
                     reward += self.wipe_contact_reward
                     self.wipe_contact_r = self.wipe_contact_reward #logging_purpose
@@ -690,7 +693,7 @@ class Polishing(SingleArmEnv):
                 
                 
                 # Reward for keeping contact
-                if self.sim.data.ncon == 5 and self._has_gripper_contact:
+                if self.sim.data.ncon == 5 and self.robots[0]._hand_vel[1]>self.min_vel:
                     # print("contact")
                     self.force_in_window_penalty = self.force_in_window_mul * np.square(total_force_ee - self.target_force)
                     # print(f"before_clip{self.force_penalty}")

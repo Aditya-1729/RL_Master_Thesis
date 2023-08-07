@@ -1,4 +1,5 @@
 program: /hpcwork/ru745256/master_thesis/7_8/robosuite/robosuite/main/hydra_sweep.py
+name: reward_4_z_fixed_vel
 method: bayes
 metric:
   name: Wipe/Return
@@ -34,6 +35,4 @@ parameters:
     value: 1
 
   indent:
-    distribution: 'uniform'
-    max: 0.3
-    min: 0.001  
+    value: 0.01
