@@ -10,7 +10,7 @@ from gymnasium import spaces, Env
 from robosuite.wrappers import Wrapper
 from itertools import cycle
 
-class No_nc(Wrapper, gym.Env):
+class Via_points_full(Wrapper, gym.Env):
     metadata = None
     render_mode = None
     """
@@ -33,7 +33,7 @@ class No_nc(Wrapper, gym.Env):
         # Create name for gym
         robots = "".join([type(robot.robot_model).__name__ for robot in self.env.robots])
         self.name = robots + "_" + type(self.env).__name__
-        self.position_limits = cfg.task_config.position_limits
+        self.position_limits = cfg.task_config.clip
         #configuration parameters
         self.indent = cfg.task_config.indent
         # self.agent_config = cfg.agent_config
@@ -134,24 +134,19 @@ class No_nc(Wrapper, gym.Env):
         
         '''
 
-        action = np.array((3,3,3, 40,40,40))
+        action = np.array((3,3,3,3,3,3, 200,200,200,200,200,200))
         eef_pos = self.env.sim.data.site_xpos[self.env.robots[0].eef_site_id]
         # print(f"pre: {action}")
         # if self.agent_config==2:
         a = np.empty(15)
-        a[:2] = action[:2]
-        a[2] = action[2]
-        a[3:6] = self.kd
-        a[6:8]= action[3:5]
-        a[8] = action[5]
-        a[9:12] = self.kp
-        # a[12:14] = eef_pos[:2] + np.clip(self.site_pos[:2]-eef_pos[:2], a_min=np.array([-self.position_limits, -self.position_limits]), a_max=np.array([self.position_limits, self.position_limits]))
-        # a[-1] = eef_pos[-1] + np.clip(self.site_pos[-1] - self.indent - eef_pos[-1], a_min = -self.position_limits, a_max=self.position_limits)
-        a[12:14] = self.site_pos[:2]
-        a[-1] = self.site_pos[-1] - self.indent
+        a[:12]=action
+        a[12:14] = eef_pos[:2] + np.clip(self.site_pos[:2]-eef_pos[:2], a_min=np.array([-self.position_limits, -self.position_limits]), a_max=np.array([self.position_limits, self.position_limits]))
+        a[-1] = eef_pos[-1] + np.clip(self.site_pos[-1] - self.indent - eef_pos[-1], a_min = -self.position_limits, a_max=self.position_limits)
+        # a[12:14] = self.site_pos[:2]
+        # a[-1] = self.site_pos[-1] - self.indent
         delta = eef_pos - self.site_pos
         dist = np.linalg.norm(delta)
-        print(f"dist:{dist} site: {self.site}" )
+        # print(f"dist:{dist} site: {self.site}")
         if dist < self.dist_th:
             self.site = next(self.sites)
             self.site_pos = self.env.sim.data.site_xpos[self.env.sim.model.site_name2id(self.site)]

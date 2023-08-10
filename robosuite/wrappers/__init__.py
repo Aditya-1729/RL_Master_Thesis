@@ -5,6 +5,9 @@ from robosuite.wrappers.domain_randomization_wrapper import DomainRandomizationW
 from robosuite.wrappers.visualization_wrapper import VisualizationWrapper
 from robosuite.wrappers.nominal_control_wrapper import Nominal_controller_gym
 from robosuite.wrappers.rl_agent_2 import RL_agent_2
+from robosuite.wrappers.via_points_min import Via_points
+from robosuite.wrappers.via_points_sweep import Via_points_2
+from robosuite.wrappers.via_points_full import Via_points_full
 try:
     from robosuite.wrappers.gym_wrapper import GymWrapper
 except:

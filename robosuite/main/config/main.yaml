@@ -34,12 +34,12 @@
 #   control_freq: 20
 
 defaults:
-  - env: polishing
-  - controller: norm_control #position_var_sweep
-  - task_config: force_control_2
+  - env: polishing_render
+  - controller: position_var #position_var #position_var_sweep
+  - task_config: force_control_4
   # - override_obj: polishing_flat
   # - override_reward: default
-  - algorithm: sac
+  - algorithm: sac_test
   - _self_
   
 seed: 0

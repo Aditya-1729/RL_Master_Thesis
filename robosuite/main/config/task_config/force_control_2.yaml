@@ -6,11 +6,11 @@ unit_wiped_reward: 50.0  # reward per peg wiped
 ee_accel_penalty: 0  # penalty for large end-effector accelerations
 
 
-excess_force_penalty_mul: 0.415 #0.0369 #10  # penalty for each step that the force is over the safety threshold       #0.05
-low_force_penalty_mul: 0.415 #0.0369
+excess_force_penalty_mul: 0.0443 #0.415 #0.0369 #10  # penalty for each step that the force is over the safety threshold       #0.05
+low_force_penalty_mul: 0.0443 #0.415 #0.0369
 
 
-distance_multiplier: 10.0  # multiplier for the dense reward inversely proportional to the mean location of the pegs to wipe
+distance_multiplier: 10  # multiplier for the dense reward inversely proportional to the mean location of the pegs to wipe
 distance_th_multiplier: 5.0  # multiplier in the tanh function for the aforementioned reward
 # settings for table top
 table_full_size: [0.5, 0.8, 0.05]  # Size of tabletop
@@ -27,7 +27,7 @@ num_markers: 100  # How many particles of dirt to generate in the environment
 contact_threshold: 0.30  # Minimum eef force to qualify as contact [N]
 pressure_threshold: 1  # force threshold (N) to overcome to get increased contact wiping reward
 pressure_threshold_max: 2 # maximum force allowed (N)
-target_force: 1.5
+target_force: 4
 # misc settings
 print_results: False  # Whether to print results or not
 get_info: False  # Whether to grab info after each env step if not
@@ -38,6 +38,7 @@ use_condensed_obj_obs: True  # Whether to use condensed object observation repre
 no_contact_penalty: 0
 force_multiplier: 5 # 0.5
 dist_th: 0.01
-indent: 0.003
+indent: 0.01
 reward_mode: 2
-position_limits: 0.01
+clip: 0.02
+min_vel: 0.0003

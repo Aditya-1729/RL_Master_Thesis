@@ -6,7 +6,7 @@ import numpy as np
 
 import robosuite as suite
 import robosuite.utils.transform_utils as T
-from robosuite.devices import *
+# from robosuite.devices import *
 from robosuite.models.robots import *
 from robosuite.robots import *
 
@@ -148,7 +148,7 @@ def choose_robots(exclude_bimanual=False):
     # Return requested robot
     return list(robots)[k]
 
-
+'''
 def input2action(device, robot, active_arm="right", env_configuration=None):
     """
     Converts an input from an active device into a valid action sequence that can be fed into an env.step() call
@@ -253,3 +253,5 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
 
     # Return the action and grasp
     return action, grasp
+
+'''

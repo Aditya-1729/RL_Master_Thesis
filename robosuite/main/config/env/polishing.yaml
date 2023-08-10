@@ -1,0 +1,12 @@
+# env:
+name: "Polishing"
+  
+specs:  
+  robots: "Panda"
+  has_renderer: False
+  has_offscreen_renderer: False
+  ignore_done: False
+  use_camera_obs: False
+  control_freq: 20
+  reward_scale: 1
+  horizon: 2000

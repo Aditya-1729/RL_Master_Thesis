@@ -7,7 +7,7 @@ from robosuite.controllers.base_controller import Controller
 from robosuite.utils.control_utils import *
 
 # Supported impedance modes
-IMPEDANCE_MODES = {"fixed", "variable", "variable_kp", "rl_agent_2"}
+IMPEDANCE_MODES = {"fixed", "variable", "variable_kp"}
 
 # TODO: Maybe better naming scheme to differentiate between input / output min / max and pos/ori limits, etc.
 
@@ -128,7 +128,6 @@ class OperationalSpaceController(Controller):
         control_ori=True,
         control_delta=True,
         uncouple_pos_ori=True,
-        agent_config=0,
         **kwargs,  # does nothing; used so no error raised when dict is passed with extra terms used previously
     ):
 
@@ -172,9 +171,6 @@ class OperationalSpaceController(Controller):
 
         # Impedance mode
         self.impedance_mode = impedance_mode
-
-        #agent_config
-        self.agent_config = agent_config
 
         # Add to control dim based on impedance_mode
         if self.impedance_mode == "variable":
@@ -239,7 +235,6 @@ class OperationalSpaceController(Controller):
         if self.use_delta:
             if delta is not None:
                 scaled_delta = self.scale_action(delta)
-                # scaled_delta=delta #TODO
                 if not self.use_ori and set_ori is None:
                     # Set default control for ori since user isn't actively controlling ori
                     set_ori = np.array([[0.0, 1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, -1.0]])
@@ -345,25 +340,16 @@ class OperationalSpaceController(Controller):
         else:
             desired_wrench = np.concatenate([desired_force, desired_torque])
             decoupled_wrench = np.dot(lambda_full, desired_wrench)
-        self.decoupled_wrench = decoupled_wrench[:3]
-        self.desired_force = desired_force
+
         # Gamma (without null torques) = J^T * F + gravity compensations
-        # self.torques = np.dot(self.J_full.T, decoupled_wrench) + self.torque_compensation
-        self.torques = np.dot(self.J_full.T, np.concatenate([desired_force,desired_torque])) + self.torque_compensation
+        self.torques = np.dot(self.J_full.T, decoupled_wrench) + self.torque_compensation
+
         # Calculate and add nullspace torques (nullspace_matrix^T * Gamma_null) to final torques
         # Note: Gamma_null = desired nullspace pose torques, assumed to be positional joint control relative
         #                     to the initial joint positions
-        # self.torques+= np.eye(7) - np.matmul(np.matmul(self.J_full.transpose(),np.linalg.pinv(self.J_full.transpose())),(np.eye(7)*10)*np.array([self.initial_joint- self.joint_pos])) #- (np.eye(7)*2*np.sqrt(10))*self.joint_vel
-        ## ros_example controller nullspace formulation
-        
-        # self.eq_q = np.array([0.07955885,  0.75446712, -0.0786964,  -2.04688355,  0.20700744,  2.75950145,
-        #     0.59211654])
-        self.eq_q=np.array([ 0.29967226,  0.7752009,   0.02467113, -2.00475776,  0.22705841,  2.79772419,
-            0.83413369])
-        self.torques+=np.matmul(np.eye(7) - np.matmul(self.J_full.transpose(),np.linalg.pinv(self.J_full.transpose())),np.matmul((np.eye(7)*1),(np.array(self.eq_q- self.joint_pos)))) - np.matmul((np.eye(7)*2*np.sqrt(1)),np.array(self.joint_vel))
-        # self.torques += nullspace_torques(
-        #     self.mass_matrix, nullspace_matrix, self.initial_joint, self.joint_pos, self.joint_vel
-        # )
+        self.torques += nullspace_torques(
+            self.mass_matrix, nullspace_matrix, self.initial_joint, self.joint_pos, self.joint_vel
+        )
 
         # Always run superclass call for any cleanups at the end
         super().run_controller()
@@ -415,13 +401,10 @@ class OperationalSpaceController(Controller):
         if self.impedance_mode == "variable":
             low = np.concatenate([self.damping_ratio_min, self.kp_min, self.input_min])
             high = np.concatenate([self.damping_ratio_max, self.kp_max, self.input_max])
-        if self.impedance_mode == "variable_kp":
+        elif self.impedance_mode == "variable_kp":
             low = np.concatenate([self.kp_min, self.input_min])
             high = np.concatenate([self.kp_max, self.input_max])
-        if self.agent_config == 2:
-            low = np.concatenate([low[:3], low[6:9]])
-            high = np.concatenate([high[:3], high[6:9]])
-        if self.impedance_mode == "fixed":
+        else:  # This is case "fixed"
             low, high = self.input_min, self.input_max
         return low, high
 

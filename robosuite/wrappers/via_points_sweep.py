@@ -8,8 +8,9 @@ import numpy as np
 import gymnasium as gym
 from gymnasium import spaces, Env
 from robosuite.wrappers import Wrapper
+from itertools import cycle
 
-class RL_agent_2(Wrapper, gym.Env):
+class Via_points_2(Wrapper, gym.Env):
     metadata = None
     render_mode = None
     """
@@ -38,9 +39,14 @@ class RL_agent_2(Wrapper, gym.Env):
         # self.agent_config = cfg.agent_config
         self.kp = cfg.controller.kp
         self.kd = cfg.controller.damping_ratio
-        self.site_pos = self.env.sim.data.site_xpos[self.env.sim.model.site_name2id(self.env.objs[0].sites[8])] 
+        self.dist_th = cfg.task_config.dist_th
+        # self.site_pos = self.env.sim.data.site_xpos[self.env.sim.model.site_name2id(self.env.objs[0].sites[8])] 
         # Get reward range
         self.reward_range = (0, self.env.reward_scale)
+        self.sites = cycle(self.env.objs[0].sites)
+        self.site = self.env.objs[0].sites[0]
+        self.site_pos = self.env.sim.data.site_xpos[self.env.sim.model.site_name2id(self.site)] 
+
 
         if keys is None:
             keys = []
@@ -95,6 +101,9 @@ class RL_agent_2(Wrapper, gym.Env):
         Returns:
             np.array: Flattened environment observation space after reset occurs
         """
+        self.sites = cycle(self.env.objs[0].sites)
+        self.site = self.env.objs[0].sites[0]
+        self.site_pos = self.env.sim.data.site_xpos[self.env.sim.model.site_name2id(self.site)] 
         if seed is not None:
             if isinstance(seed, int):
                 np.random.seed(seed)
@@ -125,19 +134,29 @@ class RL_agent_2(Wrapper, gym.Env):
         
         '''
 
-        # action = np.array((3,3,3, 40,40,40))
+        action = np.array((3,3,3,3, 200,200,200,200))
         eef_pos = self.env.sim.data.site_xpos[self.env.robots[0].eef_site_id]
         # print(f"pre: {action}")
         # if self.agent_config==2:
         a = np.empty(15)
-        a[:2] = action[:2]
-        a[2] = action[2]
-        a[3:6] = self.kd
-        a[6:8]= action[3:5]
+        a[:2] = action[0]
+        a[2] = action[1]
+        a[3:5] = action[2]
+        a[5]=action[3]
+        a[6:8]= action[4]
         a[8] = action[5]
-        a[9:12] = self.kp
+        a[9:11] = action[6]
+        a[11]=action[7]
         a[12:14] = eef_pos[:2] + np.clip(self.site_pos[:2]-eef_pos[:2], a_min=np.array([-self.position_limits, -self.position_limits]), a_max=np.array([self.position_limits, self.position_limits]))
         a[-1] = eef_pos[-1] + np.clip(self.site_pos[-1] - self.indent - eef_pos[-1], a_min = -self.position_limits, a_max=self.position_limits)
+        # a[12:14] = self.site_pos[:2]
+        # a[-1] = self.site_pos[-1] - self.indent
+        delta = eef_pos - self.site_pos
+        dist = np.linalg.norm(delta)
+        # print(f"dist:{dist} site: {self.site}")
+        if dist < self.dist_th:
+            self.site = next(self.sites)
+            self.site_pos = self.env.sim.data.site_xpos[self.env.sim.model.site_name2id(self.site)]
         # print(f"post: {a}")
         # if self.agent_config==3:
 

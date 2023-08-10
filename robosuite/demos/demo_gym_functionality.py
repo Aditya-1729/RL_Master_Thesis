@@ -37,7 +37,7 @@ if __name__ == "__main__":
     # Notice how the environment is wrapped by the wrapper
     env = GymWrapper(
         suite.make(
-            "Wipe",
+            "Polishing",
             robots="Panda",  # use Sawyer robot
             use_camera_obs=False,  # do not use pixel observations
             has_offscreen_renderer=False,
