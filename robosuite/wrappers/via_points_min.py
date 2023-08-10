@@ -134,7 +134,7 @@ class Via_points(Wrapper, gym.Env):
         
         '''
 
-        action = np.array((3,3,3, 200,200,200))
+        # action = np.array((3,3,3, 200,200,200))
         eef_pos = self.env.sim.data.site_xpos[self.env.robots[0].eef_site_id]
         # print(f"pre: {action}")
         # if self.agent_config==2:

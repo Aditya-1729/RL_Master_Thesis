@@ -34,7 +34,7 @@
 #   control_freq: 20
 
 defaults:
-  - env: polishing_render
+  - env: polishing
   - controller: position_var #position_var #position_var_sweep
   - task_config: force_control_4
   # - override_obj: polishing_flat

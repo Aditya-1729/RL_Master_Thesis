@@ -7,7 +7,7 @@ from robosuite.controllers.base_controller import Controller
 from robosuite.utils.control_utils import *
 
 # Supported impedance modes
-IMPEDANCE_MODES = {"fixed", "variable", "variable_kp", "rl_agent_2"}
+IMPEDANCE_MODES = {"fixed", "variable", "variable_kp"}
 
 # TODO: Maybe better naming scheme to differentiate between input / output min / max and pos/ori limits, etc.
 
@@ -418,11 +418,20 @@ class OperationalSpaceController(Controller):
         if self.impedance_mode == "variable_kp":
             low = np.concatenate([self.kp_min, self.input_min])
             high = np.concatenate([self.kp_max, self.input_max])
-        if self.agent_config == 2:
-            low = np.concatenate([low[:3], low[6:9]])
-            high = np.concatenate([high[:3], high[6:9]])
         if self.impedance_mode == "fixed":
             low, high = self.input_min, self.input_max
+        '''
+        agent_config is added to over-write the action space for the RL agent
+        '''
+        if self.agent_config == 1:
+            low = np.concatenate([low[:3], low[6:9]])
+            high = np.concatenate([high[:3], high[6:9]])
+        if self.agent_config == 2:
+            low = np.concatenate([low[:4], low[6:10]])
+            high = np.concatenate([high[:4], high[6:10]])
+        if self.agent_config == 3:
+            low = low[:12]
+            high = high[:12]
         return low, high
 
     @property

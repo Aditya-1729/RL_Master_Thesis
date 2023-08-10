@@ -9,4 +9,4 @@ specs:
   use_camera_obs: False
   control_freq: 20
   reward_scale: 1
-  horizon: 2000
+  horizon: 10
