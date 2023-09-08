@@ -2,7 +2,7 @@ model:
   policy: "MlpPolicy"
   train_freq: 1
   verbose: 1
-  tensorboard_log: ".runs/sac_norm_control/GPU-HPC/h2000"
+  tensorboard_log: ${dir}
   learning_starts: 2000
   batch_size: 128
   target_update_interval: 5 #5
@@ -10,14 +10,15 @@ model:
   target_entropy: "auto"
   device: "cuda"
   learning_rate: 0.0003
+  seed: ${seed}
 
 eval:
   n_eval_episodes: 1 
   eval_freq: 10000
   deterministic: True
-  render: False 
-  best_model_save_path: './logs/gpu_h2000'
-
+  render: False
+  best_model_save_path: ${dir} 
+  
 agent:
   lr_schedule: False
   lr_critic: 0.0005

@@ -45,7 +45,7 @@ class Via_points_full(Wrapper, gym.Env):
         self.reward_range = (0, self.env.reward_scale)
         self.sites = cycle(self.env.objs[0].sites)
         self.site = self.env.objs[0].sites[0]
-        self.site_pos = self.env.sim.data.site_xpos[self.env.sim.model.site_name2id(self.site)] 
+        self.site_pos = self.env.sim.data.site_xpos[self.env.sim.model.site_name2id(self.site)]
 
 
         if keys is None:

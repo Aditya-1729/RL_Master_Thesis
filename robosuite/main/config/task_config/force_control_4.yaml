@@ -1,16 +1,49 @@
 
 # settings for quadratic reward
 arm_limit_collision_penalty: -10.0  # penalty for reaching joint limit or arm collision (except the wiping tool) with the table
-wipe_contact_reward: 1  # reward for contacting something with the wiping tool  #0.1
+wipe_contact_reward: 0.997 #1 # reward for contacting something with the wiping tool  #0.1
 unit_wiped_reward: 50.0  # reward per peg wiped
 ee_accel_penalty: 0  # penalty for large end-effector accelerations
+max_vel: 0.015
+
+##--------------------------------------------------------------------------------------------------------------------------------------##
+                                                        # force parameters
+##--------------------------------------------------------------------------------------------------------------------------------------##
+# excess_force_penalty_mul: 0.01726 #0.0388 #0.0218 #0.00133 #0.0439 #0.00175 # #0.055 #10  # penalty for each step that the force is over the safety threshold       #0.05
+# low_force_penalty_mul: 0.01726 #0.0388 #0.0218 #0.00133 #0.0439 #0.00175 # #0.055
+# target_force: 6
+# safe_force_low: 6
+# safe_force_high: 6
+# force_in_window_mul: 0.00739 #0.0166  #0.0032 #0.012 #0.0011 
+# f_cap: 15
+
+# excess_force_penalty_mul: 0.01398 #0.0388 #0.0218 #0.00133 #0.0439 #0.00175 # #0.055 #10  # penalty for each step that the force is over the safety threshold       #0.05
+# low_force_penalty_mul: 0.01398 #0.0388 #0.0218 #0.00133 #0.0439 #0.00175 # #0.055
+# target_force: 5
+# safe_force_low: 5
+# safe_force_high: 5
+# force_in_window_mul: 0.005988 #0.0166  #0.0032 #0.012 #0.0011 
+# f_cap: 15
 
 
-excess_force_penalty_mul: 0.00133 #0.0439 #0.00175 # #0.055 #10  # penalty for each step that the force is over the safety threshold       #0.05
-low_force_penalty_mul: 0.00133 #0.0439 #0.00175 # #0.055
-safe_force_low: 3
-safe_force_high: 5
-force_in_window_mul: 0.0032 #0.012 #0.0011 
+# excess_force_penalty_mul: 0.0218 #0.0388 #0.0218 #0.00133 #0.0439 #0.00175 # #0.055 #10  # penalty for each step that the force is over the safety threshold       #0.05
+# low_force_penalty_mul: 0.0218 #0.0388 #0.0218 #0.00133 #0.0439 #0.00175 # #0.055
+# target_force: 7
+# safe_force_low: 7
+# safe_force_high: 7
+# force_in_window_mul: 0.00935 #0.0166  #0.0032 #0.012 #0.0011 
+# f_cap: 15
+
+excess_force_penalty_mul: 0.0388 #0.0218 #0.00133 #0.0439 #0.00175 # #0.055 #10  # penalty for each step that the force is over the safety threshold       #0.05
+low_force_penalty_mul: 0.0388 #0.0218 #0.00133 #0.0439 #0.00175 # #0.055
+target_force: 9
+safe_force_low: 9
+safe_force_high: 9
+force_in_window_mul: 0.0166  #0.0032 #0.012 #0.0011 
+f_cap: 15
+
+##--------------------------------------------------------------------------------------------------------------------------------------##
+
 
 distance_multiplier: 1  # multiplier for the dense reward inversely proportional to the mean location of the pegs to wipe
 distance_th_multiplier: 5.0  # multiplier in the tanh function for the aforementioned reward
@@ -29,7 +62,7 @@ num_markers: 100  # How many particles of dirt to generate in the environment
 contact_threshold: 0.30  # Minimum eef force to qualify as contact [N]
 pressure_threshold: 1  # force threshold (N) to overcome to get increased contact wiping reward
 pressure_threshold_max: 2 # maximum force allowed (N)
-target_force: 4
+
 # misc settings
 print_results: False  # Whether to print results or not
 get_info: False  # Whether to grab info after each env step if not
@@ -39,8 +72,9 @@ early_terminations: True  # Whether we allow for early terminations or not
 use_condensed_obj_obs: True  # Whether to use condensed object observation representation (only applicable if obj obs is active)
 no_contact_penalty: 0
 force_multiplier: 5 # 0.5
-dist_th: 0.01
-indent: 0.010
+dist_th: 0.02
+indent: 0.015
 reward_mode: 4
 clip: 0.02
-min_vel: 0.0003
+min_vel: 0.003
+task_complete_reward: 100

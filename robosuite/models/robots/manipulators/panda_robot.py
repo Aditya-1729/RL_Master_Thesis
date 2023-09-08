@@ -36,8 +36,10 @@ class Panda(ManipulatorModel):
         #TODO expose this into configuration file or at some higher level
         # return np.array([-0.20988647, 0.80245348, -0.10885691, -1.95868272 , 0.20224588 , 2.75619173
         #             , 0.31524227])
-        return np.array([-0.17639987,  0.65809135, -0.13982949, -2.05150996,  0.19365262,  2.7004419,
-                0.32508154]) #NEW_EE  
+        # return np.array([-0.17639987,  0.65809135, -0.13982949, -2.05150996,  0.19365262,  2.7004419,
+                # 0.32508154]) #NEW_EE
+        return np.array([-0.21610072 , 0.65803977, -0.13841986, -2.051167,    0.19373756,  2.6977725,
+                0.28530341])     # new threshold   
 
     @property
     def base_xpos_offset(self):

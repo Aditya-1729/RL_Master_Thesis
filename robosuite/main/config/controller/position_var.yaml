@@ -6,10 +6,10 @@
   kp: 40
   damping_ratio: 3
   impedance_mode: "variable"
-  kp_limits: [0, 300]
+  kp_limits: [0, 400]
   damping_ratio_limits: [0, 10]
   position_limits: null
   control_delta: false
   interpolation: null
   ramp_ratio: 0.2
-  agent_config: 1
+  agent_config: 3

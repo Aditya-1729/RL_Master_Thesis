@@ -1,14 +1,61 @@
-program: /hpcwork/ru745256/master_thesis/30_6/robosuite/robosuite/main/sweep_orientation.py
+program: /hpcwork/thes1499/10_8/robosuite/robosuite/main/hydra_sweep.py
+name: compl_9N
+project: HPC_sweep
 method: bayes
 metric:
   name: Wipe/Return
   goal: maximize
 parameters:
-  Kp_or: 
+  Kp_x: 
     distribution: 'int_uniform'
-    max: 300
+    max: 400
     min: 0
-  Kd_or: 
+  Kp_y: 
+    distribution: 'int_uniform'
+    max: 400
+    min: 0
+  Kp_z: 
+    distribution: 'int_uniform'
+    max: 400
+    min: 0
+  Kp_or_x: 
+    distribution: 'int_uniform'
+    max: 400
+    min: 0
+  Kp_or_y: 
+    distribution: 'int_uniform'
+    max: 400
+    min: 0
+  Kp_or_z:
+    distribution: 'int_uniform'
+    max: 400
+    min: 0  
+  Kd_x: 
     distribution: 'int_uniform'
     max: 10
-    min: 0  
+    min: 0
+  Kd_y: 
+    distribution: 'int_uniform'
+    max: 10
+    min: 0
+  Kd_z: 
+    distribution: 'int_uniform'
+    max: 10
+    min: 0
+  Kd_or_x: 
+    distribution: 'int_uniform'
+    max: 10
+    min: 0
+  Kd_or_y: 
+    distribution: 'int_uniform'
+    max: 10
+    min: 0
+  Kd_or_z:
+    distribution: 'int_uniform'
+    max: 10
+    min: 0
+
+  indent:
+    distribution: 'uniform'
+    max: 0.03
+    min: 0.01
