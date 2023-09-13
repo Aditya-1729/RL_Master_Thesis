@@ -1,0 +1,30 @@
+model:
+  policy: "MlpPolicy"
+  train_freq: 1
+  verbose: 1
+  tensorboard_log: ${dir}
+  learning_starts: 0
+  batch_size: 2
+  target_update_interval: 1 #5
+  tau: 0.005
+  target_entropy: "auto"
+  device: "cuda"
+  learning_rate: 0.0003
+  seed: ${seed}
+
+eval:
+  n_eval_episodes: 1 
+  eval_freq: 50
+  deterministic: True
+  render: False 
+  best_model_save_path: ${dir}
+
+agent:
+  lr_schedule: False
+  lr_critic: 0.0005
+  lr_actor: 0.0001
+
+learn:
+  total_timesteps: 2000
+  log_interval: 1
+
