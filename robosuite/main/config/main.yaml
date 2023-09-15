@@ -10,7 +10,7 @@ dir: ${root_dir}/${env.name}/${now:%Y.%m.%d}/${now:%H%M%S}
 project: sb3
 use_wandb: false
 seed: 9
-experiment: full_s_${seed}_f_9
+experiment: s_${seed}_r_${task_config.reward_mode}
 
 hydra:
   run:

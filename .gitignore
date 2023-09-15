@@ -118,5 +118,6 @@ macros_private.py
 #logs
 /logs
 
-#models
+#models and exp
 /models/*
+exp/*

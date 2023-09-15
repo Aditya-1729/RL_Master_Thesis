@@ -36,7 +36,9 @@ if __name__ == "__main__":
     clip = cfg.task_config.clip
 
     env.reset()
-
+    init_qpos=[-0.20805232,0.69171682, -0.12398874, -2.03316517,0.19272576, 2.71429916, 0.30621991]
+    env.robots[0].set_robot_joint_positions(init_qpos)
+    env.robots[0].controller.update_initial_joints(init_qpos)
     Return=0
     t=0
     # do visualization

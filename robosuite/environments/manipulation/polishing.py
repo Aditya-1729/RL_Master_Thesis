@@ -224,6 +224,7 @@ class Polishing(SingleArmEnv):
         self.distance_th_multiplier = self.task_config["distance_th_multiplier"]
         self.force_multiplier = self.task_config["force_multiplier"]
         self.target_force = self.task_config["target_force"]
+        self.general_penalty = self.task_config["general_penalty"]
 
         #Reward for maintaining force in the right window
         self.reward_mode = self.task_config["reward_mode"]
@@ -233,6 +234,8 @@ class Polishing(SingleArmEnv):
         self.min_vel = self.task_config["min_vel"]
         self.max_vel = self.task_config["max_vel"]
 
+        #position tracking 
+        self.position_track_multiplier = self.task_config["position_track_multiplier"]
         # Final reward computation
         # So that is better to finish that to stay touching the table for 100 steps
         # The 0.5 comes from continuous_distance_reward at 0. If something changes, this may change as well
@@ -495,6 +498,137 @@ class Polishing(SingleArmEnv):
                     self.unit_wipe = self.unit_wiped_reward #logging_purposes
 
             # Additional reward components if using dense rewards
+            if self.reward_shaping and self.reward_mode==2:
+                self.force_in_window_mul = self.task_config["force_in_window_mul"]
+                self.low_force_penalty_mul = self.task_config["low_force_penalty_mul"]
+                self.safe_force_low = self.task_config["safe_force_low"]
+                self.safe_force_high = self.task_config["safe_force_high"]
+
+
+                self.reward_normalization_factor = 1
+                
+                #set the cost range for eef_force
+                self.max_force_cost = 1/self.reward_normalization_factor + self.wipe_contact_reward
+                self.min_force_cost = 1/self.reward_normalization_factor + self.wipe_contact_reward
+                
+                
+                # Reward for keeping contact
+                if self.sim.data.ncon > 1 and self.min_vel<self.robots[0]._hand_vel[1]<self.max_vel:
+                    # print("contact")
+                    self.force_in_window_penalty = self.force_in_window_mul * np.square(total_force_ee - self.target_force)
+                    # print(f"before_clip{self.force_penalty}")
+                    # self.force_in_window_penalty = np.clip(self.force_in_window_penalty, 0, self.max_force_cost)
+                    # print(f"after_clip{self.force_penalty}")
+                    reward = reward - self.force_in_window_penalty # + self.wipe_contact_reward
+                    reward += self.wipe_contact_reward
+                    self.wipe_contact_r = self.wipe_contact_reward
+
+                # Penalty for excessive force with the end-effector
+                    if total_force_ee >= self.safe_force_high:
+                        self.force_penalty = self.excess_force_penalty_mul * np.square(total_force_ee - self.safe_force_high)
+                        # print(f"before_clip{self.force_penalty}")
+                        self.force_penalty = np.clip(self.force_penalty, 0, self.max_force_cost)
+                        # print(f"after_clip{self.force_penalty}")
+                        reward = reward - self.force_penalty # + self.wipe_contact_reward
+                        self.f_excess += 1
+
+
+                # Reward for pressing into table
+                # TODO: Need to include this computation somehow in the scaled reward computation
+                    elif total_force_ee > self.contact_threshold and total_force_ee<=self.safe_force_low:
+                        
+                        self.low_force_penalty = self.low_force_penalty_mul*(np.square(total_force_ee - self.safe_force_low)) #+self.wipe_contact_reward 
+                        self.low_force_penalty = np.clip(self.low_force_penalty, 0, self.min_force_cost)
+                        reward -= self.low_force_penalty
+
+                else:
+                    self.wipe_contact_r=0
+                    reward=self.general_penalty
+
+                # logging_purposes
+                self.reward_wop = reward
+                #progress reward
+                goal_pos = self.sim.data.site_xpos[self.sim.model.site_name2id(self.objs[0].sites[7])]
+                total_distance=np.linalg.norm(self._eef_xpos - goal_pos)
+                self.x_dist = np.linalg.norm(self._eef_xpos[0] - goal_pos[0])
+                self.total_dist_reward = self.distance_multiplier*np.tanh(total_distance)
+                reward-=self.total_dist_reward
+                reward-= self.position_track_multiplier*self.x_dist
+
+                if self.wiped_markers:
+                    if self.wiped_markers[-1] == self.objs[0].sites[-3]:
+                        # print("completed_task")
+                        self.task_completion_r = self.task_complete_reward
+                        reward += self.task_complete_reward
+
+                # Penalize large accelerations
+                reward -= self.ee_accel_penalty * np.mean(abs(self.robots[0].recent_ee_acc.current))
+
+
+            if self.reward_shaping and self.reward_mode==3:
+                self.force_in_window_mul = self.task_config["force_in_window_mul"]
+                self.low_force_penalty_mul = self.task_config["low_force_penalty_mul"]
+                self.safe_force_low = self.task_config["safe_force_low"]
+                self.safe_force_high = self.task_config["safe_force_high"]
+
+
+                self.reward_normalization_factor = 1
+                
+                #set the cost range for eef_force
+                self.max_force_cost = 1/self.reward_normalization_factor + self.wipe_contact_reward
+                self.min_force_cost = 1/self.reward_normalization_factor + self.wipe_contact_reward
+                
+                
+                # Reward for keeping contact
+                if self.sim.data.ncon > 1 and self.min_vel<self.robots[0]._hand_vel[1]<self.max_vel:
+                    # print("contact")
+                    self.force_in_window_penalty = self.force_in_window_mul * np.square(total_force_ee - self.target_force)
+                    # print(f"before_clip{self.force_penalty}")
+                    # self.force_in_window_penalty = np.clip(self.force_in_window_penalty, 0, self.max_force_cost)
+                    # print(f"after_clip{self.force_penalty}")
+                    reward = reward - self.force_in_window_penalty # + self.wipe_contact_reward
+                    reward += self.wipe_contact_reward
+                    self.wipe_contact_r = self.wipe_contact_reward
+
+                # Penalty for excessive force with the end-effector
+                    if total_force_ee >= self.safe_force_high:
+                        self.force_penalty = self.excess_force_penalty_mul * np.square(total_force_ee - self.safe_force_high)
+                        # print(f"before_clip{self.force_penalty}")
+                        self.force_penalty = np.clip(self.force_penalty, 0, self.max_force_cost)
+                        # print(f"after_clip{self.force_penalty}")
+                        reward = reward - self.force_penalty # + self.wipe_contact_reward
+                        self.f_excess += 1
+
+
+                # Reward for pressing into table
+                # TODO: Need to include this computation somehow in the scaled reward computation
+                    elif total_force_ee > self.contact_threshold and total_force_ee<=self.safe_force_low:
+                        
+                        self.low_force_penalty = self.low_force_penalty_mul*(np.square(total_force_ee - self.safe_force_low)) #+self.wipe_contact_reward 
+                        self.low_force_penalty = np.clip(self.low_force_penalty, 0, self.min_force_cost)
+                        reward -= self.low_force_penalty
+
+                else:
+                    self.wipe_contact_r=0
+                    reward=self.general_penalty
+
+                # logging_purposes
+                self.reward_wop = reward
+                #progress reward
+                goal_pos = self.sim.data.site_xpos[self.sim.model.site_name2id(self.objs[0].sites[7])]
+                total_distance=np.linalg.norm(self._eef_xpos - goal_pos)
+                self.total_dist_reward = self.distance_multiplier*np.tanh(total_distance)
+                reward-=self.total_dist_reward
+
+                if self.wiped_markers:
+                    if self.wiped_markers[-1] == self.objs[0].sites[-3]:
+                        # print("completed_task")
+                        self.task_completion_r = self.task_complete_reward
+                        reward += self.task_complete_reward
+
+                # Penalize large accelerations
+                reward -= self.ee_accel_penalty * np.mean(abs(self.robots[0].recent_ee_acc.current))
+            
 
             if self.reward_shaping and self.reward_mode==4:
                 self.force_in_window_mul = self.task_config["force_in_window_mul"]
@@ -541,12 +675,12 @@ class Polishing(SingleArmEnv):
 
                 else:
                     self.wipe_contact_r=0
-                    reward=-1
+                    reward=self.general_penalty
 
                 # logging_purposes
                 self.reward_wop = reward
                 #progress reward
-                goal_pos = self.sim.data.site_xpos[self.sim.model.site_name2id(self.objs[0].sites[8])]
+                goal_pos = self.sim.data.site_xpos[self.sim.model.site_name2id(self.objs[0].sites[7])]
                 total_distance=np.linalg.norm(self._eef_xpos - goal_pos)
                 self.total_dist_reward = self.distance_multiplier*np.tanh(total_distance)
                 reward-=self.total_dist_reward
@@ -555,10 +689,10 @@ class Polishing(SingleArmEnv):
                 # Penalize large accelerations
                 reward -= self.ee_accel_penalty * np.mean(abs(self.robots[0].recent_ee_acc.current))
             
-            if len(self.wiped_markers) == self.num_markers:
-                # print("completed_task")
-                self.task_completion_r = self.task_complete_reward
-                reward += self.task_complete_reward
+                if len(self.wiped_markers) == self.num_markers:
+                    # print("completed_task")
+                    self.task_completion_r = self.task_complete_reward
+                    reward += self.task_complete_reward
 
 
         # Printing results
@@ -844,6 +978,11 @@ class Polishing(SingleArmEnv):
         """
 
         terminated = False
+
+        if self.robots[0]._hand_vel[1] <0:
+            if self.print_results:
+                print(40 * "-" + " NEGATIVE VELOCITY " + 40 * "-")
+                terminated =True
 
         # Prematurely terminate if contacting the table with the arm
         if self.check_contact(self.robots[0].robot_model):

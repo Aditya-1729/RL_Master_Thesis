@@ -1,5 +1,5 @@
 program: /hpcwork/thes1499/10_8/robosuite/robosuite/main/hydra_sweep.py
-name: compl_9N
+name: contact_4N
 project: HPC_sweep
 method: bayes
 metric:
@@ -33,29 +33,29 @@ parameters:
   Kd_x: 
     distribution: 'int_uniform'
     max: 10
-    min: 0
+    min: 1
   Kd_y: 
     distribution: 'int_uniform'
     max: 10
-    min: 0
+    min: 1
   Kd_z: 
     distribution: 'int_uniform'
     max: 10
-    min: 0
+    min: 1
   Kd_or_x: 
     distribution: 'int_uniform'
     max: 10
-    min: 0
+    min: 1
   Kd_or_y: 
     distribution: 'int_uniform'
     max: 10
-    min: 0
+    min: 1
   Kd_or_z:
     distribution: 'int_uniform'
     max: 10
-    min: 0
+    min: 1
 
   indent:
     distribution: 'uniform'
-    max: 0.03
-    min: 0.01
+    max: 0.02
+    min: 0.005
