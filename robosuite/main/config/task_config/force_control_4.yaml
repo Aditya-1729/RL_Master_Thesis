@@ -83,7 +83,7 @@ no_contact_penalty: 0
 force_multiplier: 5 # 0.5
 dist_th: 0.02
 indent: 0.015
-reward_mode: 4
+reward_mode: 2
 clip: 0.02
 min_vel: 0.003
 task_complete_reward: 100

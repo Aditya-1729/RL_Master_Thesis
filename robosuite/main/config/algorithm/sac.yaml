@@ -11,6 +11,7 @@ model:
   device: "cuda"
   learning_rate: 0.0003
   seed: ${seed}
+  burn_in_steps: 5000
 
 eval:
   n_eval_episodes: 1 

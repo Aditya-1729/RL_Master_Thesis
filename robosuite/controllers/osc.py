@@ -429,10 +429,30 @@ class OperationalSpaceController(Controller):
         if self.agent_config == 2:
             low = np.concatenate([low[:4], low[6:10]])
             high = np.concatenate([high[:4], high[6:10]])
+        '''
+        agent config 3 is for the cases where the RL agent only provides controller gains and the nominal 
+        controller provides position commands without delta control i.e absolute positions
+        '''
         if self.agent_config == 3:
             low = low[:12]
             high = high[:12]
+        
+        '''
+        residual_1 is where we simply the hybrid action is simply
+        \pi_nom + \pi_agent as opposed to 0.5*(\pi_nom + \pi_agent)
+        '''
+        if self.agent_config == "residual_1":
+            low = -high
+
+        if self.agent_config == "residual_2":
+            high=high/2
+            low=-high/2
+        
+        if self.agent_config == "residual_3":
+            high=high/2
+            
         return low, high
+
 
     @property
     def name(self):

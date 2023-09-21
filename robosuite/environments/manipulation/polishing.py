@@ -226,6 +226,7 @@ class Polishing(SingleArmEnv):
         self.target_force = self.task_config["target_force"]
         self.general_penalty = self.task_config["general_penalty"]
 
+        self.dist_th = self.task_config["dist_th"]
         #Reward for maintaining force in the right window
         self.reward_mode = self.task_config["reward_mode"]
         self.force_reward = self.force_multiplier*self.target_force
@@ -386,7 +387,9 @@ class Polishing(SingleArmEnv):
         
         # total_force_ee = np.linalg.norm(np.array(self.robots[0].recent_ee_forcetorques.current[:3]))
         total_force_ee = np.linalg.norm(self.robots[0].ee_force - self.ee_force_bias)
+        goal_pos = self.sim.data.site_xpos[self.sim.model.site_name2id(self.objs[0].sites[7])]
 
+        self.x_dist = np.linalg.norm(self._eef_xpos[0] - goal_pos[0])
         # Neg Reward from collisions of the arm with the table
         if self.check_contact(self.robots[0].robot_model):
             if self.reward_shaping:
@@ -548,7 +551,6 @@ class Polishing(SingleArmEnv):
                 # logging_purposes
                 self.reward_wop = reward
                 #progress reward
-                goal_pos = self.sim.data.site_xpos[self.sim.model.site_name2id(self.objs[0].sites[7])]
                 total_distance=np.linalg.norm(self._eef_xpos - goal_pos)
                 self.x_dist = np.linalg.norm(self._eef_xpos[0] - goal_pos[0])
                 self.total_dist_reward = self.distance_multiplier*np.tanh(total_distance)
@@ -610,7 +612,7 @@ class Polishing(SingleArmEnv):
 
                 else:
                     self.wipe_contact_r=0
-                    reward=self.general_penalty
+                    reward=-1
 
                 # logging_purposes
                 self.reward_wop = reward
@@ -1026,11 +1028,15 @@ class Polishing(SingleArmEnv):
             self.ee_torque_bias = self.robots[0].ee_torque
 
         if self.get_info:
-            info["add_vals"] = ["nwipedmarkers", "colls", "percent_viapoints_", "f_excess"]
+            info["add_vals"] = ["nwipedmarkers", "colls", "percent_viapoints_", "f_excess", "force", "deviation", "wiped_via_point"]
             info["nwipedmarkers"] = len(self.wiped_markers)
-            info["colls"] = self.collisions
+            # info["colls"] = self.collisions
             info["percent_viapoints_"] = len(self.wiped_markers) / self.num_markers
-            info["f_excess"] = self.f_excess
+            # info["f_excess"] = self.f_excess
+            info["force"] = np.linalg.norm(self.robots[0].ee_force - self.ee_force_bias)
+            info["deviation"] = self.x_dist
+            info["wiped_via_point"] = self.wiped_markers
+    
 
         # allow episode to finish early if allowed
         if self.early_terminations:
