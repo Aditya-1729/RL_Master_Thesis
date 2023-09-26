@@ -111,6 +111,7 @@ class OperationalSpaceController(Controller):
         eef_name,
         joint_indexes,
         actuator_range,
+        guide_policy,
         input_max=1,
         input_min=-1,
         output_max=(0.05, 0.05, 0.05, 0.5, 0.5, 0.5),
@@ -153,7 +154,7 @@ class OperationalSpaceController(Controller):
         self.input_min = self.nums2array(input_min, self.control_dim)
         self.output_max = self.nums2array(output_max, self.control_dim)
         self.output_min = self.nums2array(output_min, self.control_dim)
-
+        self.guide_policy_gains = self.nums2array(guide_policy,12)
         # kp kd
         self.kp = self.nums2array(kp, 6)
         self.kd = 2 * np.sqrt(self.kp) * damping_ratio
@@ -446,11 +447,15 @@ class OperationalSpaceController(Controller):
 
         if self.agent_config == "residual_2":
             high=high/2
-            low=-high/2
+            low=-high
         
         if self.agent_config == "residual_3":
             high=high/2
-            
+
+        if self.agent_config == "residual_4":
+            high[:12]=high[:12]-self.guide_policy_gains
+            low[:12] = -self.guide_policy_gains
+
         return low, high
 
 

@@ -6,11 +6,12 @@ defaults:
   - _self_  
 
 root_dir: "./exp"
-dir: ${root_dir}/${env.name}/${now:%Y.%m.%d}/${now:%H%M%S}
+dir: ${root_dir}/${env.name}/${controller.agent_config}/${now:%Y.%m.%d}/${now:%H%M%S}
 project: sb3
 use_wandb: True
-seed: 9
-experiment: ResRL_s_${seed}_r_${task_config.reward_mode}_ag_cfg_${controller.agent_config}
+seed: 5
+# experiment: ResRL_s_${seed}_${controller.agent_config}_B_0_l_4000_std_0_mu_0_test
+experiment: RRL_s_${seed}_${controller.agent_config}_ls2000_b5000
 
 hydra:
   run:

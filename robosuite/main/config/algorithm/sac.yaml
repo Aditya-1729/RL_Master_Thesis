@@ -11,11 +11,10 @@ model:
   device: "cuda"
   learning_rate: 0.0003
   seed: ${seed}
-  burn_in_steps: 5000
 
 eval:
   n_eval_episodes: 1 
-  eval_freq: 10000
+  eval_freq: 2000
   deterministic: True
   render: False
   best_model_save_path: ${dir} 
@@ -26,6 +25,6 @@ agent:
   lr_actor: 0.0001
 
 learn:
-  total_timesteps: 2000000
-  log_interval: 5
+  total_timesteps: 500000
+  log_interval: 1
 
