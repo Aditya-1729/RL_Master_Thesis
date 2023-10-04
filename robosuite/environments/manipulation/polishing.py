@@ -38,10 +38,10 @@ DEFAULT_WIPE_CONFIG = {
     # misc settings
     "print_results": False,  # Whether to print results or not
     "get_info": False,  # Whether to grab info after each env step if not
-    "use_robot_obs": True,  # if we use robot observations (proprioception) as input to the policy
+    "use_robot_obs": False,  # if we use robot observations (proprioception) as input to the policy
     "use_contact_obs": True,  # if we use a binary observation for whether robot is in contact or not
     "early_terminations": True,  # Whether we allow for early terminations or not
-    "use_condensed_obj_obs": True,  # Whether to use condensed object observation representation (only applicable if obj obs is active)
+    "use_condensed_obj_obs": False,  # Whether to use condensed object observation representation (only applicable if obj obs is active)
     "no_contact_penalty":0,
     "force_multiplier":0.5,
     "reward_mode": 0,
@@ -213,6 +213,7 @@ class Polishing(SingleArmEnv):
         # self._max_episode_steps = _max_episode_steps
 
         # settings for the reward
+        self.total_force_ee=0
         self.reward_scale = reward_scale
         self.reward_shaping = reward_shaping
         self.arm_limit_collision_penalty = self.task_config["arm_limit_collision_penalty"]
@@ -267,6 +268,7 @@ class Polishing(SingleArmEnv):
         self.pressure_threshold_max = self.task_config["pressure_threshold_max"]
         self.f_cap = self.task_config["f_cap"]
         # misc settings
+        self.use_force_obs = self.task_config["use_force_obs"]
         self.print_results = self.task_config["print_results"]
         self.get_info = self.task_config["get_info"]
         self.use_robot_obs = self.task_config["use_robot_obs"]
@@ -308,7 +310,7 @@ class Polishing(SingleArmEnv):
 
 
         # whether to include and use ground-truth object states
-        self.use_object_obs = use_object_obs
+        self.use_object_obs = self.task_config["use_object_obs"]
 
         super().__init__(
             robots=robots,
@@ -695,51 +697,51 @@ class Polishing(SingleArmEnv):
                 @sensor(modality=modality)
                 def force_reading(obs_cache):
                     obs_cache["eef_force"] = self.total_force_ee
-                    return self.total_force_ee
+                    return self.total_force_ee if "eef_force" in obs_cache else np.zeros(1)
                 
                 sensors += [force_reading]
                 names += ["eef_force"]
 
 
-            if self.use_condensed_obj_obs:
-                # use implicit representation of wiping objects
-                @sensor(modality=modality)
-                def wipe_radius(obs_cache):
-                    wipe_rad, wipe_cent, _,_ = self._get_wipe_information()
-                    obs_cache["wipe_centroid"] = wipe_cent
-                    return wipe_rad
+            # if self.use_condensed_obj_obs:
+            #     # use implicit representation of wiping objects
+            #     @sensor(modality=modality)
+            #     def wipe_radius(obs_cache):
+            #         wipe_rad, wipe_cent, _,_ = self._get_wipe_information()
+            #         obs_cache["wipe_centroid"] = wipe_cent
+            #         return wipe_rad
 
-                @sensor(modality=modality)
-                def wipe_centroid(obs_cache):
-                    return obs_cache["wipe_centroid"] if "wipe_centroid" in obs_cache else np.zeros(3)
+            #     @sensor(modality=modality)
+            #     def wipe_centroid(obs_cache):
+            #         return obs_cache["wipe_centroid"] if "wipe_centroid" in obs_cache else np.zeros(3)
 
-                @sensor(modality=modality)
-                def proportion_wiped(obs_cache):
-                    return len(self.wiped_markers) / self.num_markers
+            #     @sensor(modality=modality)
+            #     def proportion_wiped(obs_cache):
+            #         return len(self.wiped_markers) / self.num_markers
 
-                sensors += [proportion_wiped, wipe_radius, wipe_centroid]
-                names += ["proportion_wiped", "wipe_radius", "wipe_centroid"]
+            #     sensors += [proportion_wiped, wipe_radius, wipe_centroid]
+            #     names += ["proportion_wiped", "wipe_radius", "wipe_centroid"]
 
-                if self.use_robot_obs:
-                    # also use ego-centric obs
-                    @sensor(modality=modality)
-                    def gripper_to_wipe_centroid(obs_cache):
-                        return (
-                            obs_cache["wipe_centroid"] - obs_cache[f"{pf}eef_pos"]
-                            if "wipe_centroid" in obs_cache and f"{pf}eef_pos" in obs_cache
-                            else np.zeros(3)
-                        )
+            #     if self.use_robot_obs:
+            #         # also use ego-centric obs
+            #         @sensor(modality=modality)
+            #         def gripper_to_wipe_centroid(obs_cache):
+            #             return (
+            #                 obs_cache["wipe_centroid"] - obs_cache[f"{pf}eef_pos"]
+            #                 if "wipe_centroid" in obs_cache and f"{pf}eef_pos" in obs_cache
+            #                 else np.zeros(3)
+            #             )
 
-                    sensors.append(gripper_to_wipe_centroid)
-                    names.append("gripper_to_wipe_centroid")
+            #         sensors.append(gripper_to_wipe_centroid)
+            #         names.append("gripper_to_wipe_centroid")
                 
-            else:
+            # else:
             
-                    # use explicit representation of wiping objects
-                for i, marker in enumerate(self.objs[0].sites[:-1]):
-                    marker_sensors, marker_sensor_names = self._create_marker_sensors(i, marker, modality)
-                    sensors += marker_sensors
-                    names += marker_sensor_names
+            #         # use explicit representation of wiping objects
+            #     for i, marker in enumerate(self.objs[0].sites[:-1]):
+            #         marker_sensors, marker_sensor_names = self._create_marker_sensors(i, marker, modality)
+            #         sensors += marker_sensors
+            #         names += marker_sensor_names
             
             # Create observables
             for name, s in zip(names, sensors):
