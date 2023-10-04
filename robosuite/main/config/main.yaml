@@ -2,16 +2,17 @@ defaults:
   - env: polishing
   - controller: position_var #position_var #position_var_sweep
   - task_config: force_control_4
-  - algorithm: sac
+  - algorithm: sac_curriculum
   - _self_  
 
 root_dir: "./exp"
-dir: ${root_dir}/${env.name}/${controller.agent_config}/${now:%Y.%m.%d}/${now:%H%M%S}
+experiment: CRL_s_${seed}_h_${algorithm.curriculum.complete_handover}_stp_${algorithm.curriculum.steps}
+dir: ${root_dir}/${env.name}/${experiment}/${now:%Y.%m.%d}/${now:%H%M%S}
 project: sb3
 use_wandb: True
 seed: 5
 # experiment: ResRL_s_${seed}_${controller.agent_config}_B_0_l_4000_std_0_mu_0_test
-experiment: RRL_s_${seed}_${controller.agent_config}_ls2000_b5000
+
 
 hydra:
   run:

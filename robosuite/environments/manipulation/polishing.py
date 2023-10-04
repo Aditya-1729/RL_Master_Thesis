@@ -225,7 +225,7 @@ class Polishing(SingleArmEnv):
         self.force_multiplier = self.task_config["force_multiplier"]
         self.target_force = self.task_config["target_force"]
         self.general_penalty = self.task_config["general_penalty"]
-
+        self.position_limits = self.task_config["clip"]
         self.dist_th = self.task_config["dist_th"]
         #Reward for maintaining force in the right window
         self.reward_mode = self.task_config["reward_mode"]
