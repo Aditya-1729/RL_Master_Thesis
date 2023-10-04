@@ -265,7 +265,7 @@ class Polishing(SingleArmEnv):
         self.contact_threshold = self.task_config["contact_threshold"]
         self.pressure_threshold = self.task_config["pressure_threshold"]
         self.pressure_threshold_max = self.task_config["pressure_threshold_max"]
-
+        self.f_cap = self.task_config["f_cap"]
         # misc settings
         self.print_results = self.task_config["print_results"]
         self.get_info = self.task_config["get_info"]
@@ -300,8 +300,6 @@ class Polishing(SingleArmEnv):
 
         # set other wipe-specific attributes
         self.wiped_markers = []
-        self.collisions = 0
-        self.f_excess = 0
         self.metadata = []
         self.spec = "spec"
 
@@ -347,6 +345,9 @@ class Polishing(SingleArmEnv):
         self.unit_wipe=0
         self.wipe_contact_r=0
         self.low_force_penalty = 0
+        self.collisions = 0
+        self.joint_limits=0
+        self.f_excess = 0
 
         """
         Reward function for the task.
@@ -385,8 +386,8 @@ class Polishing(SingleArmEnv):
         """
         reward = 0
         
-        # total_force_ee = np.linalg.norm(np.array(self.robots[0].recent_ee_forcetorques.current[:3]))
-        total_force_ee = np.linalg.norm(self.robots[0].ee_force - self.ee_force_bias)
+        # self.total_force_ee = np.linalg.norm(np.array(self.robots[0].recent_ee_forcetorques.current[:3]))
+        self.total_force_ee = np.linalg.norm(self.robots[0].ee_force - self.ee_force_bias)
         goal_pos = self.sim.data.site_xpos[self.sim.model.site_name2id(self.objs[0].sites[7])]
 
         self.x_dist = np.linalg.norm(self._eef_xpos[0] - goal_pos[0])
@@ -395,12 +396,12 @@ class Polishing(SingleArmEnv):
             if self.reward_shaping:
                 print("penalizing contact")
                 reward = self.arm_limit_collision_penalty
-            self.collisions += 1
+            self.joint_limits = 1
         elif self.robots[0].check_q_limits():
             if self.reward_shaping:
                 reward = self.arm_limit_collision_penalty
                 print("penalizing q_limit")
-            self.collisions += 1
+            self.collisions = 1
         else:
             # If the arm is not colliding or in joint limits, we check if we are wiping
             # (we don't want to reward wiping if there are unsafe situations)
@@ -518,7 +519,7 @@ class Polishing(SingleArmEnv):
                 # Reward for keeping contact
                 if self.sim.data.ncon > 1 and self.min_vel<self.robots[0]._hand_vel[1]<self.max_vel:
                     # print("contact")
-                    self.force_in_window_penalty = self.force_in_window_mul * np.square(total_force_ee - self.target_force)
+                    self.force_in_window_penalty = self.force_in_window_mul * np.square(self.total_force_ee - self.target_force)
                     # print(f"before_clip{self.force_penalty}")
                     # self.force_in_window_penalty = np.clip(self.force_in_window_penalty, 0, self.max_force_cost)
                     # print(f"after_clip{self.force_penalty}")
@@ -527,20 +528,20 @@ class Polishing(SingleArmEnv):
                     self.wipe_contact_r = self.wipe_contact_reward
 
                 # Penalty for excessive force with the end-effector
-                    if total_force_ee >= self.safe_force_high:
-                        self.force_penalty = self.excess_force_penalty_mul * np.square(total_force_ee - self.safe_force_high)
+                    if self.total_force_ee >= self.safe_force_high:
+                        self.force_penalty = self.excess_force_penalty_mul * np.square(self.total_force_ee - self.safe_force_high)
                         # print(f"before_clip{self.force_penalty}")
                         self.force_penalty = np.clip(self.force_penalty, 0, self.max_force_cost)
                         # print(f"after_clip{self.force_penalty}")
                         reward = reward - self.force_penalty # + self.wipe_contact_reward
-                        self.f_excess += 1
-
+                        if self.total_force_ee>=self.f_cap:
+                            self.f_excess = 1
 
                 # Reward for pressing into table
                 # TODO: Need to include this computation somehow in the scaled reward computation
-                    elif total_force_ee > self.contact_threshold and total_force_ee<=self.safe_force_low:
+                    elif self.total_force_ee > self.contact_threshold and self.total_force_ee<=self.safe_force_low:
                         
-                        self.low_force_penalty = self.low_force_penalty_mul*(np.square(total_force_ee - self.safe_force_low)) #+self.wipe_contact_reward 
+                        self.low_force_penalty = self.low_force_penalty_mul*(np.square(self.total_force_ee - self.safe_force_low)) #+self.wipe_contact_reward 
                         self.low_force_penalty = np.clip(self.low_force_penalty, 0, self.min_force_cost)
                         reward -= self.low_force_penalty
 
@@ -565,137 +566,6 @@ class Polishing(SingleArmEnv):
 
                 # Penalize large accelerations
                 reward -= self.ee_accel_penalty * np.mean(abs(self.robots[0].recent_ee_acc.current))
-
-
-            if self.reward_shaping and self.reward_mode==3:
-                self.force_in_window_mul = self.task_config["force_in_window_mul"]
-                self.low_force_penalty_mul = self.task_config["low_force_penalty_mul"]
-                self.safe_force_low = self.task_config["safe_force_low"]
-                self.safe_force_high = self.task_config["safe_force_high"]
-
-
-                self.reward_normalization_factor = 1
-                
-                #set the cost range for eef_force
-                self.max_force_cost = 1/self.reward_normalization_factor + self.wipe_contact_reward
-                self.min_force_cost = 1/self.reward_normalization_factor + self.wipe_contact_reward
-                
-                
-                # Reward for keeping contact
-                if self.sim.data.ncon > 1 and self.min_vel<self.robots[0]._hand_vel[1]<self.max_vel:
-                    # print("contact")
-                    self.force_in_window_penalty = self.force_in_window_mul * np.square(total_force_ee - self.target_force)
-                    # print(f"before_clip{self.force_penalty}")
-                    # self.force_in_window_penalty = np.clip(self.force_in_window_penalty, 0, self.max_force_cost)
-                    # print(f"after_clip{self.force_penalty}")
-                    reward = reward - self.force_in_window_penalty # + self.wipe_contact_reward
-                    reward += self.wipe_contact_reward
-                    self.wipe_contact_r = self.wipe_contact_reward
-
-                # Penalty for excessive force with the end-effector
-                    if total_force_ee >= self.safe_force_high:
-                        self.force_penalty = self.excess_force_penalty_mul * np.square(total_force_ee - self.safe_force_high)
-                        # print(f"before_clip{self.force_penalty}")
-                        self.force_penalty = np.clip(self.force_penalty, 0, self.max_force_cost)
-                        # print(f"after_clip{self.force_penalty}")
-                        reward = reward - self.force_penalty # + self.wipe_contact_reward
-                        self.f_excess += 1
-
-
-                # Reward for pressing into table
-                # TODO: Need to include this computation somehow in the scaled reward computation
-                    elif total_force_ee > self.contact_threshold and total_force_ee<=self.safe_force_low:
-                        
-                        self.low_force_penalty = self.low_force_penalty_mul*(np.square(total_force_ee - self.safe_force_low)) #+self.wipe_contact_reward 
-                        self.low_force_penalty = np.clip(self.low_force_penalty, 0, self.min_force_cost)
-                        reward -= self.low_force_penalty
-
-                else:
-                    self.wipe_contact_r=0
-                    reward=-1
-
-                # logging_purposes
-                self.reward_wop = reward
-                #progress reward
-                goal_pos = self.sim.data.site_xpos[self.sim.model.site_name2id(self.objs[0].sites[7])]
-                total_distance=np.linalg.norm(self._eef_xpos - goal_pos)
-                self.total_dist_reward = self.distance_multiplier*np.tanh(total_distance)
-                reward-=self.total_dist_reward
-
-                if self.wiped_markers:
-                    if self.wiped_markers[-1] == self.objs[0].sites[-3]:
-                        # print("completed_task")
-                        self.task_completion_r = self.task_complete_reward
-                        reward += self.task_complete_reward
-
-                # Penalize large accelerations
-                reward -= self.ee_accel_penalty * np.mean(abs(self.robots[0].recent_ee_acc.current))
-            
-
-            if self.reward_shaping and self.reward_mode==4:
-                self.force_in_window_mul = self.task_config["force_in_window_mul"]
-                self.low_force_penalty_mul = self.task_config["low_force_penalty_mul"]
-                self.safe_force_low = self.task_config["safe_force_low"]
-                self.safe_force_high = self.task_config["safe_force_high"]
-
-
-                self.reward_normalization_factor = 1
-                
-                #set the cost range for eef_force
-                self.max_force_cost = 1/self.reward_normalization_factor + self.wipe_contact_reward
-                self.min_force_cost = 1/self.reward_normalization_factor + self.wipe_contact_reward
-                
-                
-                # Reward for keeping contact
-                if self.sim.data.ncon > 1 and self.min_vel<self.robots[0]._hand_vel[1]<self.max_vel:
-                    # print("contact")
-                    self.force_in_window_penalty = self.force_in_window_mul * np.square(total_force_ee - self.target_force)
-                    # print(f"before_clip{self.force_penalty}")
-                    # self.force_in_window_penalty = np.clip(self.force_in_window_penalty, 0, self.max_force_cost)
-                    # print(f"after_clip{self.force_penalty}")
-                    reward = reward - self.force_in_window_penalty # + self.wipe_contact_reward
-                    reward += self.wipe_contact_reward
-                    self.wipe_contact_r = self.wipe_contact_reward
-
-                # Penalty for excessive force with the end-effector
-                    if total_force_ee >= self.safe_force_high:
-                        self.force_penalty = self.excess_force_penalty_mul * np.square(total_force_ee - self.safe_force_high)
-                        # print(f"before_clip{self.force_penalty}")
-                        self.force_penalty = np.clip(self.force_penalty, 0, self.max_force_cost)
-                        # print(f"after_clip{self.force_penalty}")
-                        reward = reward - self.force_penalty # + self.wipe_contact_reward
-                        self.f_excess += 1
-
-
-                # Reward for pressing into table
-                # TODO: Need to include this computation somehow in the scaled reward computation
-                    elif total_force_ee > self.contact_threshold and total_force_ee<=self.safe_force_low:
-                        
-                        self.low_force_penalty = self.low_force_penalty_mul*(np.square(total_force_ee - self.safe_force_low)) #+self.wipe_contact_reward 
-                        self.low_force_penalty = np.clip(self.low_force_penalty, 0, self.min_force_cost)
-                        reward -= self.low_force_penalty
-
-                else:
-                    self.wipe_contact_r=0
-                    reward=self.general_penalty
-
-                # logging_purposes
-                self.reward_wop = reward
-                #progress reward
-                goal_pos = self.sim.data.site_xpos[self.sim.model.site_name2id(self.objs[0].sites[7])]
-                total_distance=np.linalg.norm(self._eef_xpos - goal_pos)
-                self.total_dist_reward = self.distance_multiplier*np.tanh(total_distance)
-                reward-=self.total_dist_reward
-
-
-                # Penalize large accelerations
-                reward -= self.ee_accel_penalty * np.mean(abs(self.robots[0].recent_ee_acc.current))
-            
-                if len(self.wiped_markers) == self.num_markers:
-                    # print("completed_task")
-                    self.task_completion_r = self.task_complete_reward
-                    reward += self.task_complete_reward
-
 
         # Printing results
         if self.print_results:
@@ -814,7 +684,22 @@ class Polishing(SingleArmEnv):
         sensors = []
         names = []
         # object information in the observation
+        
+
+
+        '''
+        Adding force sensor reading in the observation
+        '''        
         if self.use_object_obs:
+            if self.use_force_obs:
+                @sensor(modality=modality)
+                def force_reading(obs_cache):
+                    obs_cache["eef_force"] = self.total_force_ee
+                    return self.total_force_ee
+                
+                sensors += [force_reading]
+                names += ["eef_force"]
+
 
             if self.use_condensed_obj_obs:
                 # use implicit representation of wiping objects
@@ -1028,11 +913,12 @@ class Polishing(SingleArmEnv):
             self.ee_torque_bias = self.robots[0].ee_torque
 
         if self.get_info:
-            info["add_vals"] = ["nwipedmarkers", "colls", "percent_viapoints_", "f_excess", "force", "deviation", "wiped_via_point"]
+            info["add_vals"] = ["nwipedmarkers", "colls", "lims", "percent_viapoints_", "f_excess", "force", "deviation", "wiped_via_point"]
             info["nwipedmarkers"] = len(self.wiped_markers)
-            # info["colls"] = self.collisions
+            info["colls"] = self.collisions
+            info["lims"] = self.joint_limits
             info["percent_viapoints_"] = len(self.wiped_markers) / self.num_markers
-            # info["f_excess"] = self.f_excess
+            info["f_excess"] = self.f_excess
             info["force"] = np.linalg.norm(self.robots[0].ee_force - self.ee_force_bias)
             info["deviation"] = self.x_dist
             info["wiped_via_point"] = self.wiped_markers
