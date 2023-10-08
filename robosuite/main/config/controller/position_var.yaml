@@ -9,7 +9,7 @@
   kp_limits: [1, 400]
   damping_ratio_limits: [1, 10]
   position_limits: null
-  control_delta: False
+  control_delta: True
   interpolation: null
   ramp_ratio: 0.2
   guide_policy: [7,7,7,7,7,7,200,200,200,200,200,200]
