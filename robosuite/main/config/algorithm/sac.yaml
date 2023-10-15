@@ -1,3 +1,4 @@
+name: SAC
 model:
   policy: "MlpPolicy"
   train_freq: 1
@@ -14,7 +15,7 @@ model:
 
 eval:
   n_eval_episodes: 1 
-  eval_freq: 2000
+  eval_freq: 5000
   deterministic: True
   render: False
   best_model_save_path: ${dir} 

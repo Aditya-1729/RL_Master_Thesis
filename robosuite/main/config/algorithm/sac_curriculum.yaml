@@ -1,3 +1,4 @@
+name: Curriculum_SAC
 model:
   policy: "MlpPolicy"
   train_freq: 1

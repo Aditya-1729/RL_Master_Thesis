@@ -6,13 +6,12 @@ defaults:
   - _self_  
 
 root_dir: "./exp"
-experiment: CRL_s_${seed}_h_${algorithm.curriculum.complete_handover}_stp_${algorithm.curriculum.steps}
-dir: ${root_dir}/${env.name}/${experiment}/${now:%Y.%m.%d}/${now:%H%M%S}
+experiment: ${algorithm.name}_${seed}
+dir: ${root_dir}/${algorithm.name}/${now:%Y.%m.%d}/s_${seed}/${now:%H%M%S}
 project: sb3
 use_wandb: True
 seed: 5
 # experiment: ResRL_s_${seed}_${controller.agent_config}_B_0_l_4000_std_0_mu_0_test
-
 
 hydra:
   run:
