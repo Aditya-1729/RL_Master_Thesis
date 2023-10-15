@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
     initialize(version_base=None, config_path="config/")
     cfg = compose(config_name="main")
-    if use_wandb==True:
+    if use_wandb:
         run = wandb.init(
         # Set the project where this run will be logged
         project="test_ros_osc",
@@ -49,7 +49,10 @@ if __name__ == "__main__":
     site = env.objs[0].sites[0]
     site_pos = env.sim.data.site_xpos[env.sim.model.site_name2id(site)]
     # site_pos_1 = env.sim.data.site_xpos[env.sim.model.site_name2id(env.objs[0].sites[-2])]
-    action = np.array((0.15,-0.2,1))
+    # Get action limits
+    low, high = env.action_spec
+    action = np.random.uniform(low, high)
+    # action = np.array((0.15,-0.2,1))
     while site!=env.objs[0].sites[-1]:
         a = site_pos
         # a=np.array((0.15,-0.2,1.5))
@@ -72,7 +75,7 @@ if __name__ == "__main__":
         # print(obs)
         # frame = obs[cfg.env.specs.camera_names + "_image"]
         # writer.append_data(frame)
-        env.render()
+        # env.render()
 
         eef_pos = obs["robot0_eef_pos"]
         # print(f"eef_pos:{eef_pos}")

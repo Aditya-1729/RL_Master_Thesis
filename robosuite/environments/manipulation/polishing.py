@@ -39,8 +39,10 @@ DEFAULT_WIPE_CONFIG = {
     "print_results": False,  # Whether to print results or not
     "get_info": False,  # Whether to grab info after each env step if not
     "use_robot_obs": False,  # if we use robot observations (proprioception) as input to the policy
+    "use_robot_obs": False,  # if we use robot observations (proprioception) as input to the policy
     "use_contact_obs": True,  # if we use a binary observation for whether robot is in contact or not
     "early_terminations": True,  # Whether we allow for early terminations or not
+    "use_condensed_obj_obs": False,  # Whether to use condensed object observation representation (only applicable if obj obs is active)
     "use_condensed_obj_obs": False,  # Whether to use condensed object observation representation (only applicable if obj obs is active)
     "no_contact_penalty":0,
     "force_multiplier":0.5,
@@ -268,6 +270,7 @@ class Polishing(SingleArmEnv):
         self.pressure_threshold_max = self.task_config["pressure_threshold_max"]
         self.f_cap = self.task_config["f_safe"]
         # misc settings
+        self.use_force_obs = self.task_config["use_force_obs"]
         self.print_results = self.task_config["print_results"]
         self.get_info = self.task_config["get_info"]
         self.use_robot_obs = self.task_config["use_robot_obs"]

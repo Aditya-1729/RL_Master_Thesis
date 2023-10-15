@@ -95,3 +95,5 @@ reward_mode: 2
 clip: 0.02
 min_vel: 0.003
 task_complete_reward: 100
+use_object_obs: False
+use_force_obs: False

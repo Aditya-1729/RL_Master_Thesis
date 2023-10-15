@@ -15,18 +15,13 @@ if __name__ == "__main__":
     
     initialize(version_base=None, config_path="config/")
     cfg = compose(config_name="main")
-    # run = wandb.init(
-    # # Set the project where this run will be logged
-    # project="test_nc_wrapper",
-    # name='indent_subtraction',
-    # config=cfg)
-    
-    # Track hyperparameters and run metadata
-    # print(OmegaConf.to_dict(cfg))
-    # initialize(version_base=None, config_path="config/")
-    # cfg = compose(config_name="main")
-    # default_config = OmegaConf.to_yaml(cfg)
-    # config = wandb.config
+    if cfg.use_wandb:
+        run = wandb.init(
+        # Set the project where this run will be logged
+        project='Default',
+        name=f"fric_0.009 0.009 0.009 np spec",
+        config=cfg) 
+        config = wandb.config
     env = GymWrapper(
         suite.make(env_name=cfg.env.name,
                     **cfg.env.specs,
@@ -42,7 +37,9 @@ if __name__ == "__main__":
     indent=cfg.task_config.indent
 
     env.reset()
-
+    dist_th =0.020
+    indent=0.01183
+    position_limits = 0.020
     Return=0
     Return_unnormalized=0
     t=0
@@ -53,17 +50,20 @@ if __name__ == "__main__":
     site_pos = env.sim.data.site_xpos[env.sim.model.site_name2id(site)]
     # action = np.array((0.15,-0.2,0.945))
     # action = np.array((3,3,3, 40,40,40))
-    action = np.array((0.15,-0.2,0.945))
-    while site!=env.objs[0].sites[-1]:
+
+    while True:
         a = site_pos
         t+=1
         # action[:2] = a[:2]
         # action[-1] = a[-1] - indent
         eef_pos = env.sim.data.site_xpos[env.robots[0].eef_site_id]
-        action[:2] = eef_pos[:2] + np.clip(a[:2]-eef_pos[:2], a_min=np.array([-0.015, -0.015]), a_max=np.array([0.015, 0.01]))
-        action[-1] = eef_pos[-1] + np.clip(a[-1] - indent - eef_pos[-1], a_min = -0.015, a_max=0.015) 
+        # print(f'eef_pose:{eef_pos}')
+        action = np.empty(15)
+        action[:12]=np.array((10,10,10,10,7,10,200,300,300,200,200,200))
+        action[12:14] = eef_pos[:2] + np.clip(site_pos[:2]-eef_pos[:2], a_min=np.array([-position_limits, -position_limits]), a_max=np.array([position_limits, position_limits]))
+        action[-1] = eef_pos[-1] + np.clip(site_pos[-1] - indent - eef_pos[-1], a_min = -position_limits, a_max=position_limits) 
         # total_force = np.linalg.norm(np.array(env.robots[0].recent_ee_forcetorques.current[:3]))
-        total_force = np.linalg.norm(env.robots[0].ee_force)
+        total_force = np.linalg.norm(env.robots[0].ee_force - env.ee_force_bias)
         # total_moment = np.linalg.norm(np.array(env.robots[0].recent_ee_forcetorques.current[:-3]))
         # if total_force>1:
             # t_contact+=1
@@ -76,27 +76,30 @@ if __name__ == "__main__":
         eef_pos = env._eef_xpos
         # print(f"eef_pos:{eef_pos}")
         delta = eef_pos - site_pos
-        print(done)
+        # print(done)
         dist = np.linalg.norm(delta)
         Return +=reward
+        if cfg.use_wandb:
         # Return_unnormalized +=env.un_normalized_reward
-        # metrics = { 'Wipe/reward': reward,
-        #                 'Wipe/Return': Return,
-        #                 'Wipe/force': total_force,
-        #                 "Wipe/force_reward": env.force_in_window_reward,
-        #                 "Wipe/task_complete_reward": env.task_completion_r,
-        #                 "Wipe/force_penalty": env.force_penalty,
-        #                 "Wipe/low_force_penalty":env.low_force_penalty,
-        #                 "Wipe/wipe_contact_reward": env.wipe_contact_r,
-        #                 "Wipe/Return_unnormalized": Return_unnormalized,
-        #                 "Wipe/unnormalized_reward": env.un_normalized_reward,
-        #                 "Wipe/unit_wiped_reward": env.unit_wipe,
-        #                 "Wipe/time_ratio":t_contact/t,
-        #                 'Wipe/dist': dist,
-        #                 'Wipe/ncontacts': env.sim.data.ncon,
-        #                 }
-        
-        # wandb.log({**metrics})
+            metrics = { 'Wipe/reward': reward,
+                            'Wipe/Return': Return,
+                            'Wipe/force': total_force,
+                            # "Wipe/force_reward": env.force_in_window_reward,
+                            "Wipe/task_complete_reward": env.task_completion_r,
+                            # "Wipe/force_penalty": env.force_penalty,
+                            # "Wipe/low_force_penalty":env.low_force_penalty,
+                            "Wipe/wipe_contact_reward": env.wipe_contact_r,
+                            # "Wipe/Return_unnormalized": Return_unnormalized,
+                            # "Wipe/unnormalized_reward": env.un_normalized_reward,
+                            'Wipe/vel_y': env.robots[0]._hand_vel[1],
+                            "Wipe/unit_wiped_reward": env.unit_wipe,
+                            # "Wipe/time_ratio":t_contact/t,
+
+                            'Wipe/dist': dist,
+                            'Wipe/ncontacts': env.sim.data.ncon,
+                            }
+            
+            wandb.log({**metrics})
 
         
         # print(Return)
@@ -109,10 +112,12 @@ if __name__ == "__main__":
             site_pos = env.sim.data.site_xpos[env.sim.model.site_name2id(site)]
             
         if done: #removed horizon limit
+            print('done')
             break
+            print('resetting')
+            env.reset()
     env.close()
     # wandb.finish()
-
 
 
 

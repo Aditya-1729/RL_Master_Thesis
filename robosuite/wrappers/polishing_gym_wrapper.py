@@ -1,7 +1,5 @@
 """
-This file implements a wrapper for facilitating compatibility with OpenAI gym.
-This is useful when using these environments with code that assumes a gym-like
-interface.
+Has cycling of sites and position as environment attributes
 """
 
 import numpy as np
@@ -119,9 +117,9 @@ class PolishingGymWrapper(Wrapper, gym.Env):
         """
         eef_pos = self.env.sim.data.site_xpos[self.env.robots[0].eef_site_id]
         delta = eef_pos - self.site_pos
-        dist = np.linalg.norm(delta)
+        self.dist = np.linalg.norm(delta)
         
-        if dist < self.dist_th:
+        if self.dist < self.dist_th:
             self.site = next(self.sites)
             self.site_pos = self.env.sim.data.site_xpos[self.env.sim.model.site_name2id(self.site)]
 
