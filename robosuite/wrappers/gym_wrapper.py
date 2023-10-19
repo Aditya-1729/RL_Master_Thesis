@@ -9,7 +9,24 @@ import gymnasium as gym
 from gymnasium import spaces, Env
 
 from robosuite.wrappers import Wrapper
-
+class ControlDelta:
+    def __init__ (self, action, env):
+        self.action=action
+        # self.state = state
+        self.position_limits=0.02
+        self.env= env
+        self.output_max = self.env.robots[0].controller.output_max
+        self.output_min = self.env.robots[0].controller.output_min
+        self.input_max = self.env.robots[0].controller.input_max
+        self.input_min = self.env.robots[0].controller.input_min
+        self.action_scale = abs(self.output_max - self.output_min) / abs(self.input_max - self.input_min)
+        self.action_output_transform = (self.output_max + self.output_min) / 2.0
+        self.action_input_transform = (self.input_max + self.input_min) / 2.0
+    
+    def rescale_agent_delta(self) -> np.ndarray:
+        action = np.clip(self.action[-3:], self.input_min, self.input_max)
+        self.transformed_action = (action - self.action_input_transform) * self.action_scale + self.action_output_transform
+        return self.transformed_action
 
 class GymWrapper(Wrapper, gym.Env):
     metadata = None
@@ -115,6 +132,10 @@ class GymWrapper(Wrapper, gym.Env):
                 - (bool) episode ending after an externally defined condition
                 - (dict) misc information
         """
+        eef_pos = self.env.sim.data.site_xpos[self.env.robots[0].eef_site_id]
+        action[-3:] = ControlDelta(action,self).rescale_agent_delta()
+        action[-3:] = eef_pos + np.clip(action[-3:], a_min=np.ones(3) * (-self.position_limits),\
+                            a_max=np.ones(3) * (self.position_limits))
         ob_dict, reward, terminated, info = self.env.step(action)
         return self._flatten_obs(ob_dict), reward, terminated, False, info
 

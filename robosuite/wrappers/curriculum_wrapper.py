@@ -69,7 +69,7 @@ class HybridPolicy2:
         guide_action = GuidePolicy2(self.env).predict()[True]
         # print(f"lambda_:{self.env.lambda_}")
         self.final_action = (1-self.env.lambda_)*guide_action[0] + self.env.lambda_*self.action
-        self.final_action[-3:] = eef_pos + np.clip(guide_action[0][-3:], a_min=np.ones(3) * (-self.position_limits),\
+        self.final_action[-3:] = eef_pos + np.clip(self.final_action[-3:], a_min=np.ones(3) * (-self.position_limits),\
                             a_max=np.ones(3) * (self.position_limits))
         return self.final_action
 

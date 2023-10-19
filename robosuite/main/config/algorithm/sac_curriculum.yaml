@@ -10,7 +10,7 @@ model:
   tau: 0.005
   target_entropy: "auto"
   device: "cuda"
-  learning_rate: 0.0003
+  # learning_rate: 0.0003
   seed: ${seed}
 
 eval:
