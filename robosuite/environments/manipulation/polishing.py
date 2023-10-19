@@ -39,10 +39,8 @@ DEFAULT_WIPE_CONFIG = {
     "print_results": False,  # Whether to print results or not
     "get_info": False,  # Whether to grab info after each env step if not
     "use_robot_obs": False,  # if we use robot observations (proprioception) as input to the policy
-    "use_robot_obs": False,  # if we use robot observations (proprioception) as input to the policy
     "use_contact_obs": True,  # if we use a binary observation for whether robot is in contact or not
     "early_terminations": True,  # Whether we allow for early terminations or not
-    "use_condensed_obj_obs": False,  # Whether to use condensed object observation representation (only applicable if obj obs is active)
     "use_condensed_obj_obs": False,  # Whether to use condensed object observation representation (only applicable if obj obs is active)
     "no_contact_penalty":0,
     "force_multiplier":0.5,
@@ -193,7 +191,7 @@ class Polishing(SingleArmEnv):
         horizon=1500,
         _max_episode_steps = 100,
         ignore_done=False,
-        hard_reset=False,
+        hard_reset=True,
         camera_names="agentview",
         camera_heights=256,
         camera_widths=256,
@@ -251,6 +249,7 @@ class Polishing(SingleArmEnv):
         ), "Distance multiplier cannot be greater than task complete reward!"
 
         # settings for table top
+
         self.table_full_size = self.task_config["table_full_size"]
         self.table_height = self.task_config["table_height"]
         self.table_height_std = self.task_config["table_height_std"]
@@ -459,17 +458,18 @@ class Polishing(SingleArmEnv):
                     
                     # We use the second tool corner as point on the plane and define the vector connecting
                     # the marker position to that point
-                    end_face_centroid = (corner1_pos+corner2_pos+corner3_pos+corner4_pos)/4
+                    # end_face_centroid = (corner1_pos+corner2_pos+corner3_pos+corner4_pos)/4
+                    end_face_centroid = self.sim.data.site_xpos[self.robots[0].eef_site_id]
                     v = marker_pos - end_face_centroid
                     # print(f'centroid:{end_face_centroid}')
                     # v = marker_pos - corner2_pos
                     v_dist = np.linalg.norm(v)
                     # Shortest distance between the center of the marker and the plane
-                    dist = np.dot(v, n)
+                    # dist = np.dot(v, n)
                     # print("v: {}, marker: {}, dist: {}, ".format(v_dist, marker, dist))
 
                     # Projection of the center of the marker onto the plane
-                    projected_point = np.array(marker_pos) - dist * n
+                    # projected_point = np.array(marker_pos) - dist * n
 
                     # Positive distances means the center of the marker is over the plane
                     # The plane is aligned with the bottom of the wiper and pointing up, so the marker would be over it
@@ -477,13 +477,13 @@ class Polishing(SingleArmEnv):
                         # Distance smaller than this threshold means we are close to the plane on the upper part
                     if v_dist < 0.02:
                         # Write touching points and projected point in coordinates of the plane
-                        pp_2 = np.array(
-                            [np.dot(projected_point - corner2_pos, v1), np.dot(projected_point - corner2_pos, v2)]
-                        )
-                        # Check if marker is within the tool center:
-                        if PointInRectangle(pp[0], pp[1], pp[2], pp[3], pp_2):
+                        # pp_2 = np.array(
+                        #     [np.dot(projected_point - corner2_pos, v1), np.dot(projected_point - corner2_pos, v2)]
+                        # )
+                        # # Check if marker is within the tool center:
+                        # if PointInRectangle(pp[0], pp[1], pp[2], pp[3], pp_2):
                             
-                            active_markers.append(marker)
+                        active_markers.append(marker)
 
 
             # Obtain the list of currently active (wiped) markers that where not wiped before
@@ -612,7 +612,10 @@ class Polishing(SingleArmEnv):
 
         # Get robot's contact geoms
         self.robot_contact_geoms = self.robots[0].robot_model.contact_geoms
-
+        delta_height = np.clip(np.random.normal(self.table_height, self.table_height_std), a_min=-0.3,a_max=0)  # sample variation in height
+        print(f'delta_height: {delta_height}')
+        self.table_offset = np.array(self.task_config["table_offset"]) + np.array((0, 0, delta_height))
+        print(f'resetting_table_height, new_table_height:{self.table_offset}')
         mujoco_arena = PolishingArena(
             table_full_size=self.table_full_size,
             table_friction=self.table_friction,
@@ -621,31 +624,31 @@ class Polishing(SingleArmEnv):
         )
         # Arena always gets set to zero origin
         mujoco_arena.set_origin([0, 0, 0])
-        
+
         
         # define objects
         self.objs = []
         obj_names = ("Flat_top", "Incline")
 
         # Create default (SequentialCompositeSampler) sampler if it has not already been specified
-        if self.placement_initializer is None:
-            self.placement_initializer = SequentialCompositeSampler(name="ObjectSampler")
-            for obj_name, default_y_range in zip(obj_names, ([0, 0], [0,0])):
-                self.placement_initializer.append_sampler(
-                    sampler=UniformRandomSampler(
-                        name=f"{obj_name}Sampler",
-                        x_range=[0, 0],
-                        y_range=default_y_range,
-                        rotation=None,
-                        rotation_axis="z",
-                        ensure_object_boundary_in_range=False,
-                        ensure_valid_placement=False,
-                        reference_pos=self.table_offset,
-                        z_offset=0.0,
-                    )
+        # if self.placement_initializer is None:       
+        self.placement_initializer = SequentialCompositeSampler(name="ObjectSampler")
+        for obj_name, default_y_range in zip(obj_names, ([0, 0], [0,0])):
+            self.placement_initializer.append_sampler(
+                sampler=UniformRandomSampler(
+                    name=f"{obj_name}Sampler",
+                    x_range=[0, 0],
+                    y_range=default_y_range,
+                    rotation=None,
+                    rotation_axis="z",
+                    ensure_object_boundary_in_range=False,
+                    ensure_valid_placement=False,
+                    reference_pos=self.table_offset,
+                    z_offset=0.0,
                 )
+            )
         # Reset sampler before adding any new samplers / objects
-        # self.placement_initializer.reset()
+        self.placement_initializer.reset()
 
         for i, (obj_cls, obj_name) in enumerate(
             zip(
@@ -878,7 +881,7 @@ class Polishing(SingleArmEnv):
             self.ee_torque_bias = self.robots[0].ee_torque
 
         if self.get_info:
-            info["add_vals"] = ["nwipedmarkers", "colls", "lims", "percent_viapoints_", "f_excess", "force", "deviation", "wiped_via_point"]
+            info["add_vals"] = ["nwipedmarkers", "colls", "lims", "percent_viapoints_", "f_excess", "force", "deviation", "wiped_via_point", "table_height"]
             info["nwipedmarkers"] = len(self.wiped_markers)
             info["colls"] = self.collisions
             info["lims"] = self.joint_limits
@@ -887,8 +890,7 @@ class Polishing(SingleArmEnv):
             info["force"] = np.linalg.norm(self.robots[0].ee_force - self.ee_force_bias)
             info["deviation"] = self.x_dist
             info["wiped_via_point"] = self.wiped_markers
-    
-
+            info["table_height"] = self.table_offset[-1]
         # allow episode to finish early if allowed
         if self.early_terminations:
             done = done or self._check_terminated()
