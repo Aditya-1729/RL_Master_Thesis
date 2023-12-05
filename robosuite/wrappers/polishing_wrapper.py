@@ -157,6 +157,27 @@ class ResidualWrapper(Wrapper, gym.Env):
             else:
                 raise TypeError("Seed must be an integer type!")
         ob_dict = self.env.reset()
+
+        site_0 = self.env.objs[0].sites[0]
+        site_pos_0 = self.env.sim.data.site_xpos[self.env.sim.model.site_name2id(site_0)]  
+        dist=np.inf     
+        action= np.zeros(self.env.action_spec[0].shape)
+        position_limits=0.03
+        indent=0.01
+
+        while dist>0.003:
+            eef_pos = self.env.sim.data.site_xpos[self.env.robots[0].eef_site_id]
+            action[:12] = self.env.robots[0].controller.guide_policy_gains
+            action[12:14] = eef_pos[:2] + np.clip(site_pos_0[:2]-eef_pos[:2], a_min=np.array([-position_limits, -position_limits]), a_max=np.array([position_limits, position_limits]))
+            action[-1] = eef_pos[-1] + np.clip(site_pos_0[-1] -  eef_pos[-1] - indent, a_min = -position_limits, a_max=position_limits) 
+            self.env.step(action)
+
+            dist = eef_pos[2]-site_pos_0[2] #just check the height
+            # print(dist)
+            if dist<0.07:
+                action[12:]=eef_pos
+                self.env.step(action)
+        
         return self._flatten_obs(ob_dict), {}
 
     def step(self, action):

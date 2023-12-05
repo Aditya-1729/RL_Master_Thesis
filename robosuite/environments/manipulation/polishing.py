@@ -269,7 +269,8 @@ class Polishing(SingleArmEnv):
         self.pressure_threshold_max = self.task_config["pressure_threshold_max"]
         self.f_cap = self.task_config["f_safe"]
         # misc settings
-        self.use_force_obs = self.task_config["use_force_obs"]
+        # self.use_force_obs = self.task_config["use_force_obs"]
+        self.use_force_obs = True
         self.print_results = self.task_config["print_results"]
         self.get_info = self.task_config["get_info"]
         self.use_robot_obs = self.task_config["use_robot_obs"]
@@ -311,7 +312,8 @@ class Polishing(SingleArmEnv):
 
 
         # whether to include and use ground-truth object states
-        self.use_object_obs = self.task_config["use_object_obs"]
+        # self.use_object_obs = self.task_config["use_object_obs"]
+        self.use_object_obs = True
 
         super().__init__(
             robots=robots,

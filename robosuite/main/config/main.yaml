@@ -8,8 +8,8 @@ defaults:
 root_dir: "./exp"
 experiment: ${algorithm.name}_${seed}
 dir: ${root_dir}/${algorithm.name}/${now:%Y.%m.%d}/s_${seed}/${now:%H%M%S}
-project: sb3
-use_wandb: False
+project: Report30_11
+use_wandb: True
 seed: 5
 # experiment: ResRL_s_${seed}_${controller.agent_config}_B_0_l_4000_std_0_mu_0_test
 
