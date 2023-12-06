@@ -453,7 +453,7 @@ class Polishing(SingleArmEnv):
 
         # Safety Feature: Negative penalty for robot at joint limits
         # ToDo: This check returns ALWAYS false. No check against Robot performed.
-        if self.self.robots[0].check_q_limits():
+        if self.robots[0].check_q_limits():
             if self.reward_shaping:
                 reward = self.arm_limit_collision_penalty
                 print("penalizing q_limit")
