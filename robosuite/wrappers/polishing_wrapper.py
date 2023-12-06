@@ -93,7 +93,7 @@ class ResidualWrapper(Wrapper, gym.Env):
         self.name = robots + "_" + type(self.env).__name__
 
         # Get reward range
-        self.reward_range = (0, self.env.reward_scale)
+        self.reward_range = (0, 1)
 
         if keys is None:
             keys = []
