@@ -9,11 +9,9 @@ max_vel: 0.015
 ##--------------------------------------------------------------------------------------------------------------------------------------##
                                                         # force parameters
 ##--------------------------------------------------------------------------------------------------------------------------------------##
-
 target_force: 5
 f_cap: 7.5
 f_safe: 10
-
 
 reward_calc_lower_limit_force: 0
 reward_calc_upper_limit_force: 10
@@ -71,11 +69,11 @@ early_terminations: True  # Whether we allow for early terminations or not
 use_condensed_obj_obs: False  # Whether to use condensed object observation representation (only applicable if obj obs is active)
 use_object_obs: True
 use_force_obs: True
-no_contact_penalty: 0
-force_multiplier: 5 # 0.5
+#no_contact_penalty: 0
+#force_multiplier: 5 # 0.5
 dist_th: 0.02
 indent: 0.015
 reward_mode: 2
 clip: 0.02
 min_vel: 0.003
-task_complete_reward: 100
+#task_complete_reward: 100
