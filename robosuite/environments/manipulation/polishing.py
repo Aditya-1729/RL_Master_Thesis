@@ -50,6 +50,38 @@ DEFAULT_WIPE_CONFIG = {
 }
 
 
+def _compute_penalty(value, target_value, lower_limit, upper_limit):
+    """ Compute the deviation of value and target_value in percent.
+    Given an lower_limit and an upper_limit.
+
+    lower_limit -------- target ----x------------ upper_limit
+    --> x is the current value.
+
+    Deviations between lower_limit and target is scaled to [0,1]
+    Deviations between upper_limit and target is scaled to [0,1]
+    Deviations above or below the limits are 1.
+
+    :param value: Current Value (float)
+    :param target_value: Target Value (float)
+    :param lower_limit: Lower interval boundary (float)
+    :param upper_limit: Upper interval boundary (float)
+    :return: relative penalty [0,1] clipped to boundaries
+    """
+
+    penalty = 0
+    delta_value = np.abs(value - target_value)
+
+    if value > target_value:  # we are exceeding the target value
+        penalty = delta_value / np.abs(upper_limit - target_value)
+
+    if value < target_value:  # we are below the target value
+        penalty = delta_value / np.abs(target_value - lower_limit)
+
+    if penalty > 1:  # If outside [lower_limit, upper_limit] give maximum penalty
+        penalty = 1
+
+    return penalty
+
 class Polishing(SingleArmEnv):
     """
     This class corresponds to the Wiping task for a single robot arm
@@ -207,6 +239,12 @@ class Polishing(SingleArmEnv):
         # ), "Tried to specify gripper other than WipingGripper in Wipe environment!"
 
         # Get config
+        self.reward_done = None
+        self.reward_contact = None
+        self.penalty_yvel = None
+        self.penalty_xdist = None
+        self.penalty_force = None
+        self.penalty_xvel = None
         self.task_config = task_config if task_config is not None else DEFAULT_WIPE_CONFIG
 
         #adding this because the wrapper threw an error for getting attribute
@@ -214,23 +252,60 @@ class Polishing(SingleArmEnv):
 
         # settings for the reward
         self.total_force_ee=0
-        self.reward_scale = reward_scale
+        #self.reward_scale = reward_scale
         self.reward_shaping = reward_shaping
         self.arm_limit_collision_penalty = self.task_config["arm_limit_collision_penalty"]
-        self.wipe_contact_reward = self.task_config["wipe_contact_reward"]
-        self.unit_wiped_reward = self.task_config["unit_wiped_reward"]
-        self.ee_accel_penalty = self.task_config["ee_accel_penalty"]
-        self.excess_force_penalty_mul = self.task_config["excess_force_penalty_mul"]
-        self.distance_multiplier = self.task_config["distance_multiplier"]
-        self.distance_th_multiplier = self.task_config["distance_th_multiplier"]
-        self.force_multiplier = self.task_config["force_multiplier"]
-        self.target_force = self.task_config["target_force"]
-        self.general_penalty = self.task_config["general_penalty"]
-        self.position_limits = self.task_config["clip"]
-        self.dist_th = self.task_config["dist_th"]
+        #self.wipe_contact_reward = self.task_config["wipe_contact_reward"]
+        #self.unit_wiped_reward = self.task_config["unit_wiped_reward"]
+        #self.ee_accel_penalty = self.task_config["ee_accel_penalty"]
+        #self.excess_force_penalty_mul = self.task_config["excess_force_penalty_mul"]
+        #self.distance_multiplier = self.task_config["distance_multiplier"]
+        #self.distance_th_multiplier = self.task_config["distance_th_multiplier"]
+        #self.force_multiplier = self.task_config["force_multiplier"]
+        #self.target_force = self.task_config["target_force"]
+        #self.general_penalty = self.task_config["general_penalty"]
+        #self.position_limits = self.task_config["clip"]
+        #self.dist_th = self.task_config["dist_th"]
+
+        # Reward related Config -------------
+        self.target_force = self.task_config.target_force
+        self.reward_calc_upper_limit_force = self.task_config.reward_calc_upper_limit_force  # Missing in config
+        self.reward_calc_lower_limit_force = self.task_config.reward_calc_lower_limit_force  # Missing in config
+        assert (self.target_force < self.reward_calc_upper_limit_force)
+        assert (self.target_force > self.reward_calc_lower_limit_force)
+
+        self.target_xvel = self.task_config.target_xvel  # Missing in config
+        self.reward_calc_upper_limit_xvel = self.task_config.reward_calc_upper_limit_xvel  # Missing in config
+        self.reward_calc_lower_limit_xvel = self.task_config.reward_calc_lower_limit_xvel  # Missing in config
+        assert (self.target_xvel < self.reward_calc_upper_limit_xvel)
+        assert (self.target_xvel > self.reward_calc_lower_limit_xvel)
+
+        self.target_xdist = self.task_config.target_xdist
+        self.reward_calc_upper_limit_xdist = self.task_config.reward_calc_upper_limit_xdist  # Missing in config
+        self.reward_calc_lower_limit_xdist = self.task_config.reward_calc_lower_limit_xdist  # Missing in config
+        assert (self.reward_calc_lower_limit_xdist < self.reward_calc_upper_limit_xdist)
+
+        self.target_yvel = self.task_config.target_yvel  # Missing in config
+        self.reward_calc_upper_limit_yvel = self.task_config.reward_calc_upper_limit_yvel  # Missing in config
+        self.reward_calc_lower_limit_yvel = self.task_config.reward_calc_lower_limit_yvel  # Missing in config
+        assert (self.target_yvel < self.reward_calc_upper_limit_yvel)
+        assert (self.target_yvel > self.reward_calc_lower_limit_yvel)
+
+        self.reward_calc_min_force_for_contact = self.task_config.reward_calc_min_force_for_contact
+        assert (self.reward_calc_min_force_for_contact < self.target_force)
+
+        self.reward_calc_c_force = self.task_config.reward_calc_c_force
+        self.reward_calc_c_xvel = self.task_config.reward_calc_c_xvel
+        self.reward_calc_c_xdist = self.task_config.reward_calc_c_xdist
+        self.reward_calc_c_yvel = self.task_config.reward_calc_c_yvel
+        self.reward_calc_c_contact = self.task_config.reward_calc_c_contact
+        self.reward_calc_c_done = self.task_config.reward_calc_c_done
+        # ------------- Reward related config
+
+
         #Reward for maintaining force in the right window
         self.reward_mode = self.task_config["reward_mode"]
-        self.force_reward = self.force_multiplier*self.target_force
+        #self.force_reward = self.force_multiplier*self.target_force
 
         #vel_threshold
         self.min_vel = self.task_config["min_vel"]
@@ -282,9 +357,9 @@ class Polishing(SingleArmEnv):
         # self.reward_normalization_factor = horizon / (
         #     self.num_markers * self.unit_wiped_reward + horizon * (self.wipe_contact_reward + self.task_complete_reward + self.force_reward)
         # )
-        self.reward_normalization_factor = horizon / (
-             horizon * (self.wipe_contact_reward + self.force_reward)
-        )
+        #self.reward_normalization_factor = horizon / (
+        #     horizon * (self.wipe_contact_reward + self.force_reward)
+        #)
 
         # Set task-specific parameters
         self.single_object_mode = single_object_mode
@@ -342,7 +417,7 @@ class Polishing(SingleArmEnv):
             renderer_config=renderer_config,
         )
 
-    def reward(self, action=None):
+    def reward_old(self, action=None):
 
         self.force_in_window_penalty=0
         self.force_penalty =0
@@ -601,6 +676,135 @@ class Polishing(SingleArmEnv):
             reward *= self.reward_scale * self.reward_normalization_factor
         
         return reward
+
+    def reward(self, reward_scaled_min=-1, reward_scaled_max=1):
+        """
+        Calculate the reward for the wiping task.
+        The following components are considered:
+        - Force penalty (penalty_force): |F_ee - F^target|
+        - x velocity penalty (penalty_xvel): |v_x - v_x^target|
+        - y velocity penalty (penalty_yvel): |v_y - v_y^target|
+        - x distance penalty (penalty_xdist): |p_x - p_x^target|
+        - reward for done (reward_done)
+        - reward contact (reward_contact)
+
+        All components are in the [0,1] range.
+
+        The final reward is given by:
+                reward =   self.reward_calc_c_force * penalty_force \
+                 + self.reward_calc_c_xvel * penalty_xvel \
+                 + self.reward_calc_c_xdist * penalty_xdist \
+                 + self.reward_calc_c_yvel * penalty_yvel \
+                 + self.reward_calc_c_contact * reward_contact \
+                 + self.reward_calc_c_done * reward_done
+
+        And scaled to [-1,1].
+        :return: Reward value [-1,1]
+        """
+        # Safety Feature: Negative penalty from collisions of the arm with the table
+        # ToDo: This check returns ALWAYS false. No check against Robot performed.
+        if self.check_contact(self.robots[0].robot_model):
+            if self.reward_shaping:
+                print("penalizing contact")
+                reward = self.arm_limit_collision_penalty
+            self.collisions = 1
+            return reward
+
+        # Safety Feature: Negative penalty for robot at joint limits
+        # ToDo: This check returns ALWAYS false. No check against Robot performed.
+        if self.self.robots[0].check_q_limits():
+            if self.reward_shaping:
+                reward = self.arm_limit_collision_penalty
+                print("penalizing q_limit")
+            self.joint_limits = 1
+            return reward
+
+        # If the arm is not colliding or in joint limits, we check if we are wiping
+        # (we don't want to reward wiping if there are unsafe situations)
+        # Compute penalty/reward contributions
+        # Every penalty/reward should be normalized to [0,1]
+
+        # Compute force penalty (penalty_force)
+        self.total_force_ee = np.linalg.norm(self.robots[0].ee_force - self.ee_force_bias)
+        self.penalty_force = _compute_penalty(self.total_force_ee, self.target_force,
+                                              self.reward_calc_lower_limit_force,
+                                              self.reward_calc_upper_limit_force)
+
+        # Compute x velocity penalty (penalty_xvel)
+        xvel_ee = self.sim.data.get_site_xvelp(self.robots[0].eef_site_id)[0]
+        self.penalty_xvel = _compute_penalty(xvel_ee, self.target_xvel, self.reward_calc_lower_limit_xvel,
+                                             self.reward_calc_upper_limit_xvel)
+
+        # Compute x distance penalty (penalty_xdist)
+        goal_pos = self.sim.data.site_xpos[self.sim.model.site_name2id(self.objs[0].sites[7])]
+        xdist_ee = np.linalg.norm(self._eef_xpos[0] - goal_pos[0])
+        self.penalty_xdist = _compute_penalty(xdist_ee, self.target_xdist, self.reward_calc_lower_limit_xdist,
+                                              self.reward_calc_upper_limit_xdist)
+
+        # Compute y velocity penalty (penalty_yvel)
+        yvel_ee = self.sim.data.get_site_xvelp(self.robots[0].eef_site_id)[1]  # ToDo: Is this the y velocity?
+        self.penalty_yvel = _compute_penalty(yvel_ee, self.target_yvel, self.reward_calc_lower_limit_yvel,
+                                             self.reward_calc_upper_limit_yvel)
+
+        # Compute reward contact penalty (reward_contact)
+        self.reward_contact = 0
+        if self.total_force_ee > self.reward_calc_min_force_for_contact:
+            # ToDo: To adhere to the scheme of rewards in [0,1] this setting is not necessary?
+            self.reward_contact = 1  # self.wipe_contact_reward
+
+        # Compute reward for done penalty (reward_done)
+        self.reward_done = 0
+        # check if all markers are wiped and give final reward if so
+        self._update_wiped_markers()  # ToDo: What does this function do? Copied from Aditya
+        if self.wiped_markers:
+            if self.wiped_markers[-1] == list(self.task_config.sites)[-2]:
+                self.reward_done = self.task_config.reward_done  # should this be the number of episode steps?
+
+        reward = self.reward_calc_c_force * self.penalty_force \
+                 + self.reward_calc_c_xvel * self.penalty_xvel \
+                 + self.reward_calc_c_xdist * self.penalty_xdist \
+                 + self.reward_calc_c_yvel * self.penalty_yvel \
+                 + self.reward_calc_c_contact * self.reward_contact \
+                 + self.reward_calc_c_done * self.reward_done
+
+        reward_min = self.reward_calc_c_force + self.reward_calc_c_xvel + self.reward_calc_c_xdist + self.reward_calc_c_yvel
+        reward_max = self.reward_calc_c_contact
+
+        # Scale the reward to desired range
+        reward_scaled = (reward - reward_min) / (reward_max - reward_min) * np.abs(
+            reward_scaled_max - reward_scaled_min) + reward_scaled_min
+        return reward_scaled
+
+    def _update_wiped_markers(self):
+        active_markers = []
+
+        # Only go into this computation if there are contact points
+        if self.total_force_ee >= 0 and np.linalg.norm(self.robot_state["eef_pos"][-1] - self.goal_pos[-1]) < 0.01:
+
+            # Check each marker that is still active
+            for marker in list(self.task_config.sites)[:-1]:
+                # Current marker 3D location in world frame
+                marker_pos = np.array(self.task_config.sites[marker].xpos)
+                # TODO check if the centroid is indeed the eef_xpos
+                end_face_centroid = self.robot_state["eef_pos"]
+                v = marker_pos - end_face_centroid
+                v_dist = np.linalg.norm(v)
+
+                if v_dist < 0.03:
+                    active_markers.append(marker)
+                    self.site_pose = marker_pos
+
+        # Obtain the list of currently active (wiped) markers that where not wiped before
+        # These are the markers we are wiping at this step
+        lall = np.where(np.isin(active_markers, self.wiped_markers, invert=True))
+        new_active_markers = np.array(active_markers)[lall]
+        # Loop through all new markers we are wiping at this step
+        for new_active_marker in new_active_markers:
+            # Add this marker the wiped list
+            self.wiped_markers.append(new_active_marker)
+            print(self.wiped_markers)
+            # Add reward if we're using the dense reward
+            # self.unit_wipe = self.unit_wiped_reward  # logging_purposes
 
     def _load_model(self):
         """
