@@ -834,7 +834,7 @@ class Polishing(SingleArmEnv):
             info["percent_viapoints_"] = len(self.wiped_markers) / self.num_markers
             info["f_excess"] = self.f_excess
             info["force"] = np.linalg.norm(self.robots[0].ee_force - self.ee_force_bias)
-            info["deviation"] = self.x_dist
+            #info["deviation"] = self.x_dist
             info["wiped_via_point"] = self.wiped_markers
             info["table_height"] = self.table_offset[-1]
 
