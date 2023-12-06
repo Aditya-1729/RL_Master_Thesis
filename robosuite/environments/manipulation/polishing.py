@@ -502,7 +502,7 @@ class Polishing(SingleArmEnv):
         self._update_wiped_markers()  # ToDo: What does this function do? Copied from Aditya
         if self.wiped_markers:
             if self.wiped_markers[-1] == self.objs[0].sites[-3]:
-                self.reward_done = self.task_config.reward_done  # should this be the number of episode steps?
+                self.reward_done = self.task_config["reward_done"]  # should this be the number of episode steps?
 
         reward = self.reward_calc_c_force * self.penalty_force \
                  + self.reward_calc_c_xvel * self.penalty_xvel \
