@@ -473,8 +473,8 @@ class Polishing(SingleArmEnv):
 
         # Compute x velocity penalty (penalty_xvel)
         #xvel_ee = self.sim.data.get_site_xvelp(self.robots[0].eef_site_id)[0]
-        xvel_ee = self.sim.data.get_site_xvelp('gripper0_ee_x')[0]
-
+        #xvel_ee = self.sim.data.get_site_xvelp('gripper0_ee_x')[0]
+        xvel_ee = self.robots[0]._hand_vel[0]
         self.penalty_xvel = _compute_penalty(xvel_ee, self.target_xvel, self.reward_calc_lower_limit_xvel,
                                              self.reward_calc_upper_limit_xvel)
 
@@ -485,7 +485,7 @@ class Polishing(SingleArmEnv):
                                               self.reward_calc_upper_limit_xdist)
 
         # Compute y velocity penalty (penalty_yvel)
-        yvel_ee = self.sim.data.get_site_xvelp('gripper0_ee_y')[1]  # ToDo: Is this the y velocity?
+        yvel_ee = self.robots[0]._hand_vel[1]  # ToDo: Is this the y velocity?
         self.penalty_yvel = _compute_penalty(yvel_ee, self.target_yvel, self.reward_calc_lower_limit_yvel,
                                              self.reward_calc_upper_limit_yvel)
 
@@ -500,7 +500,7 @@ class Polishing(SingleArmEnv):
         # check if all markers are wiped and give final reward if so
         self._update_wiped_markers()  # ToDo: What does this function do? Copied from Aditya
         if self.wiped_markers:
-            if self.wiped_markers[-1] == list(self.task_config.sites)[-2]:
+            if self.wiped_markers[-1] == self.objs[0].sites[-3]:
                 self.reward_done = self.task_config.reward_done  # should this be the number of episode steps?
 
         reward = self.reward_calc_c_force * self.penalty_force \
