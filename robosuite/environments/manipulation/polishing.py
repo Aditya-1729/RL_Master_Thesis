@@ -268,38 +268,38 @@ class Polishing(SingleArmEnv):
         #self.dist_th = self.task_config["dist_th"]
 
         # Reward related Config -------------
-        self.target_force = self.task_config.target_force
-        self.reward_calc_upper_limit_force = self.task_config.reward_calc_upper_limit_force  # Missing in config
-        self.reward_calc_lower_limit_force = self.task_config.reward_calc_lower_limit_force  # Missing in config
+        self.target_force = self.task_config["target_force"]
+        self.reward_calc_upper_limit_force = self.task_config["reward_calc_upper_limit_force"]  # Missing in config
+        self.reward_calc_lower_limit_force = self.task_config["reward_calc_lower_limit_force"]  # Missing in config
         assert (self.target_force < self.reward_calc_upper_limit_force)
         assert (self.target_force > self.reward_calc_lower_limit_force)
 
-        self.target_xvel = self.task_config.target_xvel  # Missing in config
-        self.reward_calc_upper_limit_xvel = self.task_config.reward_calc_upper_limit_xvel  # Missing in config
-        self.reward_calc_lower_limit_xvel = self.task_config.reward_calc_lower_limit_xvel  # Missing in config
+        self.target_xvel = self.task_config["target_xvel"]  # Missing in config
+        self.reward_calc_upper_limit_xvel = self.task_config["reward_calc_upper_limit_xvel"]  # Missing in config
+        self.reward_calc_lower_limit_xvel = self.task_config["reward_calc_lower_limit_xvel"]  # Missing in config
         assert (self.target_xvel < self.reward_calc_upper_limit_xvel)
         assert (self.target_xvel > self.reward_calc_lower_limit_xvel)
 
-        self.target_xdist = self.task_config.target_xdist
-        self.reward_calc_upper_limit_xdist = self.task_config.reward_calc_upper_limit_xdist  # Missing in config
-        self.reward_calc_lower_limit_xdist = self.task_config.reward_calc_lower_limit_xdist  # Missing in config
+        self.target_xdist = self.task_config["target_xdist"]
+        self.reward_calc_upper_limit_xdist = self.task_config["reward_calc_upper_limit_xdist"]  # Missing in config
+        self.reward_calc_lower_limit_xdist = self.task_config["reward_calc_lower_limit_xdist"]  # Missing in config
         assert (self.reward_calc_lower_limit_xdist < self.reward_calc_upper_limit_xdist)
 
-        self.target_yvel = self.task_config.target_yvel  # Missing in config
-        self.reward_calc_upper_limit_yvel = self.task_config.reward_calc_upper_limit_yvel  # Missing in config
-        self.reward_calc_lower_limit_yvel = self.task_config.reward_calc_lower_limit_yvel  # Missing in config
+        self.target_yvel = self.task_config["target_yvel"]  # Missing in config
+        self.reward_calc_upper_limit_yvel = self.task_config["reward_calc_upper_limit_yvel"]  # Missing in config
+        self.reward_calc_lower_limit_yvel = self.task_config["reward_calc_lower_limit_yvel"]  # Missing in config
         assert (self.target_yvel < self.reward_calc_upper_limit_yvel)
         assert (self.target_yvel > self.reward_calc_lower_limit_yvel)
 
-        self.reward_calc_min_force_for_contact = self.task_config.reward_calc_min_force_for_contact
+        self.reward_calc_min_force_for_contact = self.task_config["reward_calc_min_force_for_contact"]
         assert (self.reward_calc_min_force_for_contact < self.target_force)
 
-        self.reward_calc_c_force = self.task_config.reward_calc_c_force
-        self.reward_calc_c_xvel = self.task_config.reward_calc_c_xvel
-        self.reward_calc_c_xdist = self.task_config.reward_calc_c_xdist
-        self.reward_calc_c_yvel = self.task_config.reward_calc_c_yvel
-        self.reward_calc_c_contact = self.task_config.reward_calc_c_contact
-        self.reward_calc_c_done = self.task_config.reward_calc_c_done
+        self.reward_calc_c_force = self.task_config["reward_calc_c_force"]
+        self.reward_calc_c_xvel = self.task_config["reward_calc_c_xvel"]
+        self.reward_calc_c_xdist = self.task_config["reward_calc_c_xdist"]
+        self.reward_calc_c_yvel = self.task_config["reward_calc_c_yvel"]
+        self.reward_calc_c_contact = self.task_config["reward_calc_c_contact"]
+        self.reward_calc_c_done = self.task_config["reward_calc_c_done"]
         # ------------- Reward related config
 
 
