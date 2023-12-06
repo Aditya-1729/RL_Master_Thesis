@@ -9,6 +9,7 @@ model:
   batch_size: 128
   target_update_interval: 5 #5
   tau: 0.005
+  ent_coef: "auto_2"
   target_entropy: "auto"
   device: "cuda"
   learning_rate: 0.0003
