@@ -485,7 +485,7 @@ class Polishing(SingleArmEnv):
                                               self.reward_calc_upper_limit_xdist)
 
         # Compute y velocity penalty (penalty_yvel)
-        yvel_ee = self.sim.data.get_site_xvelp('gripper0_ee_x')[1]  # ToDo: Is this the y velocity?
+        yvel_ee = self.sim.data.get_site_xvelp('gripper0_ee_y')[1]  # ToDo: Is this the y velocity?
         self.penalty_yvel = _compute_penalty(yvel_ee, self.target_yvel, self.reward_calc_lower_limit_yvel,
                                              self.reward_calc_upper_limit_yvel)
 
@@ -522,20 +522,21 @@ class Polishing(SingleArmEnv):
         active_markers = []
 
         # Only go into this computation if there are contact points
-        if self.total_force_ee >= 0 and np.linalg.norm(self.robot_state["eef_pos"][-1] - self.goal_pos[-1]) < 0.01:
+        if self.total_force_ee >= 0 and self.sim.data.ncon != 0::
 
-            # Check each marker that is still active
-            for marker in list(self.task_config.sites)[:-1]:
-                # Current marker 3D location in world frame
-                marker_pos = np.array(self.task_config.sites[marker].xpos)
-                # TODO check if the centroid is indeed the eef_xpos
-                end_face_centroid = self.robot_state["eef_pos"]
-                v = marker_pos - end_face_centroid
-                v_dist = np.linalg.norm(v)
+        # Check each marker that is still active
+        for marker in self.objs[0].sites[:-1]:
 
-                if v_dist < 0.03:
-                    active_markers.append(marker)
-                    self.site_pose = marker_pos
+            # Current marker 3D location in world frame
+            marker_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(marker)])
+
+            end_face_centroid = self.sim.data.site_xpos[self.robots[0].eef_site_id]
+            v = marker_pos - end_face_centroid
+
+            v_dist = np.linalg.norm(v)
+
+            if v_dist < 0.02:
+                active_markers.append(marker)
 
         # Obtain the list of currently active (wiped) markers that where not wiped before
         # These are the markers we are wiping at this step
@@ -544,8 +545,11 @@ class Polishing(SingleArmEnv):
         # Loop through all new markers we are wiping at this step
         for new_active_marker in new_active_markers:
             # Add this marker the wiped list
+            new_active_marker_geom_id = self.sim.model.site_name2id(new_active_marker)
+            # Make this marker transparent since we wiped it (alpha = 0)
+            self.sim.model.site_rgba[new_active_marker_geom_id][3] = 0
             self.wiped_markers.append(new_active_marker)
-            print(self.wiped_markers)
+
             # Add reward if we're using the dense reward
             # self.unit_wipe = self.unit_wiped_reward  # logging_purposes
 
