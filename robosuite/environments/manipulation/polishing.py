@@ -243,6 +243,7 @@ class Polishing(SingleArmEnv):
         # ), "Tried to specify gripper other than WipingGripper in Wipe environment!"
 
         # Get config
+        self.joint_limits = 0
         self.reward_done = None
         self.reward_contact = None
         self.penalty_yvel = None
@@ -836,6 +837,13 @@ class Polishing(SingleArmEnv):
             info["deviation"] = self.x_dist
             info["wiped_via_point"] = self.wiped_markers
             info["table_height"] = self.table_offset[-1]
+
+            info["reward_done"]=self.reward_done
+            info["reward_contact"]=self.reward_contact
+            info["penalty_yvel"]=self.penalty_yvel
+            info["penalty_xdist"]=self.penalty_xdist
+            info["penalty_force"]=self.penalty_force
+            info["penalty_xvel"]=self.penalty_xvel
         # allow episode to finish early if allowed
         if self.early_terminations:
             done = done or self._check_terminated()
