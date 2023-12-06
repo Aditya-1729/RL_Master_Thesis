@@ -522,8 +522,8 @@ class Polishing(SingleArmEnv):
         reward_max = self.reward_calc_c_contact
 
         # Scale the reward to desired range
-        reward_scaled = (reward - reward_min) / (reward_max - reward_min) * np.abs(
-            reward_scaled_max - reward_scaled_min) + reward_scaled_min
+        reward_scaled = reward # took out reward scaling for now
+        #reward_scaled = (reward - reward_min) / (reward_max - reward_min) * np.abs(reward_scaled_max - reward_scaled_min) + reward_scaled_min
         return np.linalg.norm(reward_scaled)
 
     def _update_wiped_markers(self):

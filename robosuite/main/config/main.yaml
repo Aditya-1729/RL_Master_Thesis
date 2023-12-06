@@ -2,7 +2,7 @@ defaults:
   - env: polishing
   - controller: position_var #position_var #position_var_sweep
   - task_config: force_control_new_reward
-  - algorithm: sac_curriculum
+  - algorithm: sac_residual #sac_curriculum
   - _self_  
 
 root_dir: "./exp"
