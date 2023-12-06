@@ -24,8 +24,8 @@ target_xdist : 0 # - Funktioniert nur für gearde Linien in x Richtung!!
 reward_calc_lower_limit_xdist: -0.008
 reward_calc_upper_limit_xdist: 0.008
 target_yvel: 0.07
-reward_calc_lower_limit_yvel: 0.12
-reward_calc_upper_limit_yvel: 0.02
+reward_calc_lower_limit_yvel: 0.02
+reward_calc_upper_limit_yvel: 0.12
 
 reward_calc_min_force_for_contact: 1
 reward_done: 25
