@@ -270,7 +270,7 @@ class Polishing(SingleArmEnv):
         # self.target_force = self.task_config["target_force"]
         # self.general_penalty = self.task_config["general_penalty"]
         # self.position_limits = self.task_config["clip"]
-        # self.dist_th = self.task_config["dist_th"]
+        self.dist_th = self.task_config["dist_th"]
 
         # Reward related Config -------------
         self.target_force = self.task_config["target_force"]
