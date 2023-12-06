@@ -39,7 +39,7 @@ reward_calc_c_done: 1
 # The sum of *_c_* values without c_done should be 0. Scaling factors for penalties have to be negative!
 
 # settings for quadratic reward (ToDo should prob. go)
-arm_limit_collision_penalty: -10.0  # penalty for reaching joint limit or arm collision (except the wiping tool) with the table
+#arm_limit_collision_penalty: -10.0  # penalty for reaching joint limit or arm collision (except the wiping tool) with the table
 
 
 ##--------------------------------------------------------------------------------------------------------------------------------------##
