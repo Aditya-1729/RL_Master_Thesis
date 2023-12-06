@@ -763,7 +763,7 @@ class Polishing(SingleArmEnv):
         """
 
         # return True if len(self.wiped_markers) == self.num_markers else False
-        return True if self.task_completion_r else False
+        return True if self.reward_done > 0  else False
 
     def _check_terminated(self):
         """
