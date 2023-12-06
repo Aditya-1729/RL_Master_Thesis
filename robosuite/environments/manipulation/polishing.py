@@ -1,8 +1,8 @@
 import random
 from collections import OrderedDict
-import multiprocessing
+
 import numpy as np
-import robosuite.utils.transform_utils as T
+
 from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
 from robosuite.models.arenas import PolishingArena
 # from robosuite.models.objects import RoundobjObject, SquareobjObject
@@ -10,14 +10,17 @@ from robosuite.models.objects import Flat_top, Incline
 from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.observables import Observable, sensor
 from robosuite.utils.placement_samplers import SequentialCompositeSampler, UniformRandomSampler
+
 DEFAULT_WIPE_CONFIG = {
     # settings for reward
-    "arm_limit_collision_penalty": -10.0,  # penalty for reaching joint limit or arm collision (except the wiping tool) with the table
+    "arm_limit_collision_penalty": -10.0,
+    # penalty for reaching joint limit or arm collision (except the wiping tool) with the table
     "wipe_contact_reward": 0.5,  # reward for contacting something with the wiping tool  #0.1
     "unit_wiped_reward": 50.0,  # reward per peg wiped
     "ee_accel_penalty": 0,  # penalty for large end-effector accelerations
     "excess_force_penalty_mul": 0.5,  # penalty for each step that the force is over the safety threshold       #0.05
-    "distance_multiplier": 10.0,  # multiplier for the dense reward inversely proportional to the mean location of the pegs to wipe
+    "distance_multiplier": 10.0,
+    # multiplier for the dense reward inversely proportional to the mean location of the pegs to wipe
     "distance_th_multiplier": 5.0,  # multiplier in the tanh function for the aforementioned reward
     # settings for table top
     "table_full_size": [0.5, 0.8, 0.05],  # Size of tabletop
@@ -34,19 +37,19 @@ DEFAULT_WIPE_CONFIG = {
     "contact_threshold": 0.30,  # Minimum eef force to qualify as contact [N]
     "pressure_threshold": 2,  # force threshold (N) to overcome to get increased contact wiping reward
     "pressure_threshold_max": 5.0,  # maximum force allowed (N)
-    "target_force":3.5,
+    "target_force": 3.5,
     # misc settings
     "print_results": False,  # Whether to print results or not
     "get_info": False,  # Whether to grab info after each env step if not
     "use_robot_obs": False,  # if we use robot observations (proprioception) as input to the policy
     "use_contact_obs": True,  # if we use a binary observation for whether robot is in contact or not
     "early_terminations": True,  # Whether we allow for early terminations or not
-    "use_condensed_obj_obs": False,  # Whether to use condensed object observation representation (only applicable if obj obs is active)
-    "no_contact_penalty":0,
-    "force_multiplier":0.5,
+    "use_condensed_obj_obs": False,
+    # Whether to use condensed object observation representation (only applicable if obj obs is active)
+    "no_contact_penalty": 0,
+    "force_multiplier": 0.5,
     "reward_mode": 0,
 
-    
 }
 
 
@@ -81,6 +84,7 @@ def _compute_penalty(value, target_value, lower_limit, upper_limit):
         penalty = 1
 
     return penalty
+
 
 class Polishing(SingleArmEnv):
     """
@@ -200,38 +204,38 @@ class Polishing(SingleArmEnv):
     """
 
     def __init__(
-        self,
-        robots,
-        env_configuration="default",
-        controller_configs=None,
-        gripper_types="CustomGripper",
-        initialization_noise=None, #"default"
-        use_camera_obs=True,
-        use_object_obs=False,
-        reward_scale=1.0,
-        reward_shaping=True,
-        placement_initializer=None,
-        single_object_mode=2, #mode single to randomly select one of the two objects on reset
-        obj_type="Flat_top",
-        has_renderer=False,
-        has_offscreen_renderer=True,
-        render_camera="frontview",
-        render_collision_mesh=False,
-        render_visual_mesh=True,
-        render_gpu_device_id=-1,
-        control_freq=20,
-        horizon=1500,
-        _max_episode_steps = 100,
-        ignore_done=False,
-        hard_reset=True,
-        camera_names="agentview",
-        camera_heights=256,
-        camera_widths=256,
-        camera_depths=False,
-        camera_segmentations=None,  # {None, instance, class, element}
-        task_config=None,
-        renderer="mujoco",
-        renderer_config=None,
+            self,
+            robots,
+            env_configuration="default",
+            controller_configs=None,
+            gripper_types="CustomGripper",
+            initialization_noise=None,  # "default"
+            use_camera_obs=True,
+            use_object_obs=False,
+            reward_scale=1.0,
+            reward_shaping=True,
+            placement_initializer=None,
+            single_object_mode=2,  # mode single to randomly select one of the two objects on reset
+            obj_type="Flat_top",
+            has_renderer=False,
+            has_offscreen_renderer=True,
+            render_camera="frontview",
+            render_collision_mesh=False,
+            render_visual_mesh=True,
+            render_gpu_device_id=-1,
+            control_freq=20,
+            horizon=1500,
+            _max_episode_steps=100,
+            ignore_done=False,
+            hard_reset=True,
+            camera_names="agentview",
+            camera_heights=256,
+            camera_widths=256,
+            camera_depths=False,
+            camera_segmentations=None,  # {None, instance, class, element}
+            task_config=None,
+            renderer="mujoco",
+            renderer_config=None,
     ):
         # Assert that the gripper type is None
         # assert (
@@ -247,25 +251,25 @@ class Polishing(SingleArmEnv):
         self.penalty_xvel = None
         self.task_config = task_config if task_config is not None else DEFAULT_WIPE_CONFIG
 
-        #adding this because the wrapper threw an error for getting attribute
+        # adding this because the wrapper threw an error for getting attribute
         # self._max_episode_steps = _max_episode_steps
 
         # settings for the reward
-        self.total_force_ee=0
-        #self.reward_scale = reward_scale
+        self.total_force_ee = 0
+        # self.reward_scale = reward_scale
         self.reward_shaping = reward_shaping
         self.arm_limit_collision_penalty = self.task_config["arm_limit_collision_penalty"]
-        #self.wipe_contact_reward = self.task_config["wipe_contact_reward"]
-        #self.unit_wiped_reward = self.task_config["unit_wiped_reward"]
-        #self.ee_accel_penalty = self.task_config["ee_accel_penalty"]
-        #self.excess_force_penalty_mul = self.task_config["excess_force_penalty_mul"]
-        #self.distance_multiplier = self.task_config["distance_multiplier"]
-        #self.distance_th_multiplier = self.task_config["distance_th_multiplier"]
-        #self.force_multiplier = self.task_config["force_multiplier"]
-        #self.target_force = self.task_config["target_force"]
-        #self.general_penalty = self.task_config["general_penalty"]
-        #self.position_limits = self.task_config["clip"]
-        #self.dist_th = self.task_config["dist_th"]
+        # self.wipe_contact_reward = self.task_config["wipe_contact_reward"]
+        # self.unit_wiped_reward = self.task_config["unit_wiped_reward"]
+        # self.ee_accel_penalty = self.task_config["ee_accel_penalty"]
+        # self.excess_force_penalty_mul = self.task_config["excess_force_penalty_mul"]
+        # self.distance_multiplier = self.task_config["distance_multiplier"]
+        # self.distance_th_multiplier = self.task_config["distance_th_multiplier"]
+        # self.force_multiplier = self.task_config["force_multiplier"]
+        # self.target_force = self.task_config["target_force"]
+        # self.general_penalty = self.task_config["general_penalty"]
+        # self.position_limits = self.task_config["clip"]
+        # self.dist_th = self.task_config["dist_th"]
 
         # Reward related Config -------------
         self.target_force = self.task_config["target_force"]
@@ -302,26 +306,25 @@ class Polishing(SingleArmEnv):
         self.reward_calc_c_done = self.task_config["reward_calc_c_done"]
         # ------------- Reward related config
 
-
-        #Reward for maintaining force in the right window
+        # Reward for maintaining force in the right window
         self.reward_mode = self.task_config["reward_mode"]
-        #self.force_reward = self.force_multiplier*self.target_force
+        # self.force_reward = self.force_multiplier*self.target_force
 
-        #vel_threshold
+        # vel_threshold
         self.min_vel = self.task_config["min_vel"]
         self.max_vel = self.task_config["max_vel"]
 
-        #position tracking 
-        self.position_track_multiplier = self.task_config["position_track_multiplier"]
+        # position tracking
+        #self.position_track_multiplier = self.task_config["position_track_multiplier"]
         # Final reward computation
         # So that is better to finish that to stay touching the table for 100 steps
         # The 0.5 comes from continuous_distance_reward at 0. If something changes, this may change as well
         # self.task_complete_reward = self.unit_wiped_reward * (self.wipe_contact_reward + 0.5)
-        self.task_complete_reward =self.task_config["task_complete_reward"]
+        #self.task_complete_reward = self.task_config["task_complete_reward"]
         # Verify that the distance multiplier is not greater than the task complete reward
-        assert (
-            self.task_complete_reward > self.distance_multiplier
-        ), "Distance multiplier cannot be greater than task complete reward!"
+        #assert (
+        #        self.task_complete_reward > self.distance_multiplier
+        #), "Distance multiplier cannot be greater than task complete reward!"
 
         # settings for table top
 
@@ -336,7 +339,7 @@ class Polishing(SingleArmEnv):
         self.two_clusters = self.task_config["two_clusters"]
         self.coverage_factor = self.task_config["coverage_factor"]
         # self.num_markers = self.task_config["num_markers"] #TODO
-        self.num_markers = 8 #len(self.objs[0].sites[:-1])      #it wont work like this
+        self.num_markers = 8  # len(self.objs[0].sites[:-1])      #it wont work like this
 
         # settings for thresholds
         self.contact_threshold = self.task_config["contact_threshold"]
@@ -357,13 +360,13 @@ class Polishing(SingleArmEnv):
         # self.reward_normalization_factor = horizon / (
         #     self.num_markers * self.unit_wiped_reward + horizon * (self.wipe_contact_reward + self.task_complete_reward + self.force_reward)
         # )
-        #self.reward_normalization_factor = horizon / (
+        # self.reward_normalization_factor = horizon / (
         #     horizon * (self.wipe_contact_reward + self.force_reward)
-        #)
+        # )
 
         # Set task-specific parameters
         self.single_object_mode = single_object_mode
-        self.obj_to_id = {"Flat_top": 0, "Incline":1}
+        self.obj_to_id = {"Flat_top": 0, "Incline": 1}
         self.obj_id_to_sensors = {}  # Maps obj id to sensor names for that obj
         if obj_type is not None:
             assert obj_type in self.obj_to_id.keys(), "invalid @obj_type argument - choose one of {}".format(
@@ -372,9 +375,8 @@ class Polishing(SingleArmEnv):
             self.obj_id = self.obj_to_id[obj_type]  # use for convenient indexing
         self.obj_to_use = None
 
-
         # ee resets
-        self.ee_force_bias = np.array([0,0,-6.955]) #weight of eef
+        self.ee_force_bias = np.array([0, 0, -6.955])  # weight of eef
         self.ee_torque_bias = np.zeros(3)
 
         # set other wipe-specific attributes
@@ -384,7 +386,6 @@ class Polishing(SingleArmEnv):
 
         # object placement initializer
         self.placement_initializer = placement_initializer
-
 
         # whether to include and use ground-truth object states
         # self.use_object_obs = self.task_config["use_object_obs"]
@@ -416,266 +417,6 @@ class Polishing(SingleArmEnv):
             renderer=renderer,
             renderer_config=renderer_config,
         )
-
-    def reward_old(self, action=None):
-
-        self.force_in_window_penalty=0
-        self.force_penalty =0
-        self.task_completion_r = 0
-        self.unit_wipe=0
-        self.wipe_contact_r=0
-        self.low_force_penalty = 0
-        self.collisions = 0
-        self.joint_limits=0
-        self.f_excess = 0
-
-        """
-        Reward function for the task.
-
-        Sparse un-normalized reward:
-
-            - a discrete reward of self.unit_wiped_reward is provided per single dirt (peg) wiped during this step
-            - a discrete reward of self.task_complete_reward is provided if all dirt is wiped
-
-        Note that if the arm is either colliding or near its joint limit, a reward of 0 will be automatically given
-
-        Un-normalized summed components if using reward shaping (individual components can be set to 0:
-
-            - Reaching: in [0, self.distance_multiplier], proportional to distance between wiper and centroid of dirt
-              and zero if the table has been fully wiped clean of all the dirt
-            - Table Contact: in {0, self.wipe_contact_reward}, non-zero if wiper is in contact with table
-            - Wiping: in {0, self.unit_wiped_reward}, non-zero for each dirt (peg) wiped during this step
-            - Cleaned: in {0, self.task_complete_reward}, non-zero if no dirt remains on the table
-            - Collision / Joint Limit Penalty: in {self.arm_limit_collision_penalty, 0}, nonzero if robot arm
-              is colliding with an object
-              - Note that if this value is nonzero, no other reward components can be added
-            - Large Force Penalty: in [-inf, 0], scaled by wiper force and directly proportional to
-              self.excess_force_penalty_mul if the current force exceeds self.pressure_threshold_max
-            - Large Acceleration Penalty: in [-inf, 0], scaled by estimated wiper acceleration and directly
-              proportional to self.ee_accel_penalty
-
-        Note that the final per-step reward is normalized given the theoretical best episode return and then scaled:
-        reward_scale * (horizon /
-        (num_markers * unit_wiped_reward + horizon * (wipe_contact_reward + task_complete_reward)))
-
-        Args:
-            action (np array): [NOT USED]
-
-        Returns:
-            float: reward value
-        """
-        reward = 0
-        
-        # self.total_force_ee = np.linalg.norm(np.array(self.robots[0].recent_ee_forcetorques.current[:3]))
-        self.total_force_ee = np.linalg.norm(self.robots[0].ee_force - self.ee_force_bias)
-        goal_pos = self.sim.data.site_xpos[self.sim.model.site_name2id(self.objs[0].sites[7])]
-
-        self.x_dist = np.linalg.norm(self._eef_xpos[0] - goal_pos[0])
-        # Neg Reward from collisions of the arm with the table
-        if self.check_contact(self.robots[0].robot_model):
-            if self.reward_shaping:
-                print("penalizing contact")
-                reward = self.arm_limit_collision_penalty
-            self.collisions = 1
-        elif self.robots[0].check_q_limits():
-            if self.reward_shaping:
-                reward = self.arm_limit_collision_penalty
-                print("penalizing q_limit")
-            self.joint_limits = 1
-
-        else:
-            # If the arm is not colliding or in joint limits, we check if we are wiping
-            # (we don't want to reward wiping if there are unsafe situations)
-            active_markers = []
-
-            # Current 3D location of the corners of the wiping tool in world frame
-            c_geoms = self.robots[0].gripper.important_geoms["corners"]
-            corner1_id = self.sim.model.geom_name2id(c_geoms[0])
-            corner1_pos = np.array(self.sim.data.geom_xpos[corner1_id])
-            corner2_id = self.sim.model.geom_name2id(c_geoms[1])
-            corner2_pos = np.array(self.sim.data.geom_xpos[corner2_id])
-            corner3_id = self.sim.model.geom_name2id(c_geoms[2])
-            corner3_pos = np.array(self.sim.data.geom_xpos[corner3_id])
-            corner4_id = self.sim.model.geom_name2id(c_geoms[3])
-            corner4_pos = np.array(self.sim.data.geom_xpos[corner4_id])
-
-            # Unit vectors on my plane
-            v1 = corner1_pos - corner2_pos
-            v1 /= np.linalg.norm(v1)
-            v2 = corner4_pos - corner2_pos
-            v2 /= np.linalg.norm(v2)
-
-
-            # Corners of the tool in the coordinate frame of the plane
-            t1 = np.array([np.dot(corner1_pos - corner2_pos, v1), np.dot(corner1_pos - corner2_pos, v2)])
-            t2 = np.array([np.dot(corner2_pos - corner2_pos, v1), np.dot(corner2_pos - corner2_pos, v2)])
-            t3 = np.array([np.dot(corner3_pos - corner2_pos, v1), np.dot(corner3_pos - corner2_pos, v2)])
-            t4 = np.array([np.dot(corner4_pos - corner2_pos, v1), np.dot(corner4_pos - corner2_pos, v2)])
-
-            pp = [t1, t2, t4, t3]
-
-            # Normal of the plane defined by v1 and v2
-            n = np.cross(v2,v1) #changed
-            n /=np.linalg.norm(n)
-            
-            def isLeft(P0, P1, P2):
-                return (P1[0] - P0[0]) * (P2[1] - P0[1]) - (P2[0] - P0[0]) * (P1[1] - P0[1])
-
-            def PointInRectangle(X, Y, Z, W, P):
-                return isLeft(X, Y, P) < 0 and isLeft(Y, Z, P) < 0 and isLeft(Z, W, P) < 0 and isLeft(W, X, P) < 0
-
-            # Only go into this computation if there are contact points
-            if self.sim.data.ncon != 0:
-
-                # Check each marker that is still active
-                for marker in self.objs[0].sites[:-1]:
-
-                    # Current marker 3D location in world frame
-                    marker_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(marker)])
-                    
-                    # We use the second tool corner as point on the plane and define the vector connecting
-                    # the marker position to that point
-                    # end_face_centroid = (corner1_pos+corner2_pos+corner3_pos+corner4_pos)/4
-                    end_face_centroid = self.sim.data.site_xpos[self.robots[0].eef_site_id]
-                    v = marker_pos - end_face_centroid
-                    # print(f'centroid:{end_face_centroid}')
-                    # v = marker_pos - corner2_pos
-                    v_dist = np.linalg.norm(v)
-                    # Shortest distance between the center of the marker and the plane
-                    # dist = np.dot(v, n)
-                    # print("v: {}, marker: {}, dist: {}, ".format(v_dist, marker, dist))
-
-                    # Projection of the center of the marker onto the plane
-                    # projected_point = np.array(marker_pos) - dist * n
-
-                    # Positive distances means the center of the marker is over the plane
-                    # The plane is aligned with the bottom of the wiper and pointing up, so the marker would be over it
-                    # if dist < 0.0:
-                        # Distance smaller than this threshold means we are close to the plane on the upper part
-                    if v_dist < 0.02:
-                        # Write touching points and projected point in coordinates of the plane
-                        # pp_2 = np.array(
-                        #     [np.dot(projected_point - corner2_pos, v1), np.dot(projected_point - corner2_pos, v2)]
-                        # )
-                        # # Check if marker is within the tool center:
-                        # if PointInRectangle(pp[0], pp[1], pp[2], pp[3], pp_2):
-                            
-                        active_markers.append(marker)
-
-
-            # Obtain the list of currently active (wiped) markers that where not wiped before
-            # These are the markers we are wiping at this step
-            lall = np.where(np.isin(active_markers, self.wiped_markers, invert=True))
-            new_active_markers = np.array(active_markers)[lall]
-            # print("active_markers: {}, new_active_markers: {}".format(active_markers, new_active_markers) )
-            # Loop through all new markers we are wiping at this step
-            for new_active_marker in new_active_markers:
-                # Grab relevant marker id info
-                new_active_marker_geom_id = self.sim.model.site_name2id(new_active_marker)
-                # Make this marker transparent since we wiped it (alpha = 0)
-                self.sim.model.site_rgba[new_active_marker_geom_id][3] = 0
-                # Add this marker the wiped list
-                self.wiped_markers.append(new_active_marker)
-                # Add reward if we're using the dense reward
-                if self.reward_shaping:
-                    
-                    # reward += self.unit_wiped_reward #commented out the reward component
-                    
-                    self.unit_wipe = self.unit_wiped_reward #logging_purposes
-
-            # Additional reward components if using dense rewards
-            if self.reward_shaping and self.reward_mode==2:
-                self.force_in_window_mul = self.task_config["force_in_window_mul"]
-                self.low_force_penalty_mul = self.task_config["low_force_penalty_mul"]
-                self.safe_force_low = self.task_config["safe_force_low"]
-                self.safe_force_high = self.task_config["safe_force_high"]
-
-
-                self.reward_normalization_factor = 1
-                
-                #set the cost range for eef_force
-                self.max_force_cost = 1/self.reward_normalization_factor + self.wipe_contact_reward
-                self.min_force_cost = 1/self.reward_normalization_factor + self.wipe_contact_reward
-                
-                
-                # Reward for keeping contact
-                if self.sim.data.ncon > 1 and self.min_vel<self.robots[0]._hand_vel[1]<self.max_vel:
-                    # print("contact")
-                    self.force_in_window_penalty = self.force_in_window_mul * np.square(self.total_force_ee - self.target_force)
-                    # print(f"before_clip{self.force_penalty}")
-                    # self.force_in_window_penalty = np.clip(self.force_in_window_penalty, 0, self.max_force_cost)
-                    # print(f"after_clip{self.force_penalty}")
-                    # reward = reward - self.force_in_window_penalty # + self.wipe_contact_reward
-                    reward += self.wipe_contact_reward
-                    self.wipe_contact_r = self.wipe_contact_reward
-
-                # Penalty for excessive force with the end-effector
-                    if self.total_force_ee >= self.safe_force_high:
-                        self.force_penalty = self.excess_force_penalty_mul * np.square(self.total_force_ee - self.safe_force_high)
-                        # print(f"before_clip{self.force_penalty}")
-                        self.force_penalty = np.clip(self.force_penalty+self.force_penalty,a_min=0, a_max=self.max_force_cost)
-                        # print(f"after_clip{self.force_penalty}")
-                        reward = reward - self.force_penalty # + self.wipe_contact_reward
-                        if self.total_force_ee>=self.f_cap:
-                            self.f_excess = 1
-
-                # Reward for pressing into table
-                # TODO: Need to include this computation somehow in the scaled reward computation
-                    elif self.total_force_ee > self.contact_threshold and self.total_force_ee<=self.safe_force_low:
-                        
-                        self.low_force_penalty = self.low_force_penalty_mul*(np.square(self.total_force_ee - self.safe_force_low)) #+self.wipe_contact_reward 
-                        self.low_force_penalty = np.clip(self.low_force_penalty+self.force_in_window_penalty, a_min=0, a_max=self.min_force_cost)
-                        reward -= self.low_force_penalty
-
-                else:
-                    self.wipe_contact_r=0
-                    reward=self.general_penalty
-
-                # logging_purposes
-                self.reward_wop = reward
-                #progress reward
-                total_distance=np.linalg.norm(self._eef_xpos - goal_pos)
-                self.x_dist = np.linalg.norm(self._eef_xpos[0] - goal_pos[0])
-                self.total_dist_reward = self.distance_multiplier*np.tanh(total_distance)
-                reward-=self.total_dist_reward
-                reward-= self.position_track_multiplier*self.x_dist
-
-                if self.wiped_markers:
-                    if self.wiped_markers[-1] == self.objs[0].sites[-3]:
-                        # print("completed_task")
-                        self.task_completion_r = self.task_complete_reward
-                        reward += self.task_complete_reward
-
-                # Penalize large accelerations
-                reward -= self.ee_accel_penalty * np.mean(abs(self.robots[0].recent_ee_acc.current))
-
-        # Printing results
-        if self.print_results:
-            string_to_print = (
-                "Process {pid}, timestep {ts:>4}: reward: {rw:8.4f}"
-                "wiped markers: {ws:>3} collisions: {sc:>3} f-excess: {fe:>3}".format(
-                    pid=id(multiprocessing.current_process()),
-                    ts=self.timestep,
-                    rw=reward,
-                    ws=len(self.wiped_markers),
-                    sc=self.collisions,
-                    fe=self.f_excess,
-                )
-            )
-            print(string_to_print)
-
-        # If we're scaling our reward, we normalize the per-step rewards given the theoretical best episode return
-        # This is equivalent to scaling the reward by:
-        #   reward_scale * (horizon /
-        #       (num_markers * unit_wiped_reward + horizon * (wipe_contact_reward + task_complete_reward)))
-
-        #commented out 
-        
-        if self.reward_scale:
-            self.un_normalized_reward = reward
-            reward *= self.reward_scale * self.reward_normalization_factor
-        
-        return reward
 
     def reward(self, reward_scaled_min=-1, reward_scaled_max=1):
         """
@@ -818,7 +559,8 @@ class Polishing(SingleArmEnv):
 
         # Get robot's contact geoms
         self.robot_contact_geoms = self.robots[0].robot_model.contact_geoms
-        delta_height = np.clip(np.random.normal(self.table_height, self.table_height_std), a_min=-0.3,a_max=0)  # sample variation in height
+        delta_height = np.clip(np.random.normal(self.table_height, self.table_height_std), a_min=-0.3,
+                               a_max=0)  # sample variation in height
         print(f'delta_height: {delta_height}')
         self.table_offset = np.array(self.task_config["table_offset"]) + np.array((0, 0, delta_height))
         print(f'resetting_table_height, new_table_height:{self.table_offset}')
@@ -831,7 +573,6 @@ class Polishing(SingleArmEnv):
         # Arena always gets set to zero origin
         mujoco_arena.set_origin([0, 0, 0])
 
-        
         # define objects
         self.objs = []
         obj_names = ("Flat_top", "Incline")
@@ -839,7 +580,7 @@ class Polishing(SingleArmEnv):
         # Create default (SequentialCompositeSampler) sampler if it has not already been specified
         # if self.placement_initializer is None:       
         self.placement_initializer = SequentialCompositeSampler(name="ObjectSampler")
-        for obj_name, default_y_range in zip(obj_names, ([0, 0], [0,0])):
+        for obj_name, default_y_range in zip(obj_names, ([0, 0], [0, 0])):
             self.placement_initializer.append_sampler(
                 sampler=UniformRandomSampler(
                     name=f"{obj_name}Sampler",
@@ -857,15 +598,14 @@ class Polishing(SingleArmEnv):
         self.placement_initializer.reset()
 
         for i, (obj_cls, obj_name) in enumerate(
-            zip(
-                (Flat_top, Incline), 
-                obj_names,
-            )
+                zip(
+                    (Flat_top, Incline),
+                    obj_names,
+                )
         ):
             obj = obj_cls(name=obj_name)
             self.objs.append(obj)
 
-            
             # Add this obj to the placement initializer
             if isinstance(self.placement_initializer, SequentialCompositeSampler):
                 # assumes we have two samplers so we add objs to them
@@ -873,7 +613,6 @@ class Polishing(SingleArmEnv):
             else:
                 # This is assumed to be a flat sampler, so we just add all objs to this sampler
                 self.placement_initializer.add_objects(obj)
-            
 
         # task includes arena, robot, and objects of interest
         self.model = ManipulationTask(
@@ -898,23 +637,20 @@ class Polishing(SingleArmEnv):
         sensors = []
         names = []
         # object information in the observation
-        
-
 
         '''
         Adding force sensor reading in the observation
-        '''        
+        '''
         if self.use_object_obs:
             if self.use_force_obs:
                 @sensor(modality=modality)
                 def force_reading(obs_cache):
                     obs_cache["eef_force"] = self.total_force_ee
                     return self.total_force_ee if "eef_force" in obs_cache else np.zeros(1)
-                
+
                 sensors += [force_reading]
                 names += ["eef_force"]
 
-            
             # Create observables
             for name, s in zip(names, sensors):
                 observables[name] = Observable(
@@ -924,7 +660,7 @@ class Polishing(SingleArmEnv):
                 )
 
         return observables
-    
+
     def _create_marker_sensors(self, i, marker, modality="object"):
         """
         Helper function to create sensors for a given marker. This is abstracted in a separate function call so that we
@@ -968,7 +704,6 @@ class Polishing(SingleArmEnv):
             names.append(f"gripper_to_marker{i}")
 
         return sensors, names
-    
 
     def _reset_internal(self):
         super()._reset_internal()
@@ -988,7 +723,6 @@ class Polishing(SingleArmEnv):
                     # for marker in self.objs[0].sites:
                     #     self.sim.model.site_rgba[self.sim.model.site_name2id(marker)][3]=1
 
-            
         # Move objects out of the scene depending on the mode
         obj_names = {obj.name for obj in self.objs}
         if self.single_object_mode == 1:
@@ -1013,7 +747,6 @@ class Polishing(SingleArmEnv):
         self.ee_force_bias = np.zeros(3)
         self.ee_torque_bias = np.zeros(3)
 
-
     def _check_success(self):
         """
         Checks if Task succeeds (all dirt wiped).
@@ -1021,10 +754,9 @@ class Polishing(SingleArmEnv):
         Returns:
             bool: True if completed task
         """
-        
+
         # return True if len(self.wiped_markers) == self.num_markers else False
         return True if self.task_completion_r else False
-
 
     def _check_terminated(self):
         """
@@ -1040,23 +772,23 @@ class Polishing(SingleArmEnv):
 
         terminated = False
 
-        if self.robots[0]._hand_vel[1] <0:
+        if self.robots[0]._hand_vel[1] < 0:
             if self.print_results:
                 print(40 * "-" + " NEGATIVE VELOCITY " + 40 * "-")
-                terminated =True
+                terminated = True
 
         # Prematurely terminate if contacting the table with the arm
         if self.check_contact(self.robots[0].robot_model):
             if self.print_results:
                 print(40 * "-" + " COLLIDED " + 40 * "-")
             terminated = True
-        
+
         # Prematurely terminate if task is success
         if self._check_success():
             if self.print_results:
                 print(40 * "+" + " FINISHED WIPING " + 40 * "+")
             terminated = True
-        
+
         # Prematurely terminate if contacting the table with the arm
         if self.robots[0].check_q_limits():
             if self.print_results:
@@ -1087,7 +819,8 @@ class Polishing(SingleArmEnv):
             self.ee_torque_bias = self.robots[0].ee_torque
 
         if self.get_info:
-            info["add_vals"] = ["nwipedmarkers", "colls", "lims", "percent_viapoints_", "f_excess", "force", "deviation", "wiped_via_point", "table_height"]
+            info["add_vals"] = ["nwipedmarkers", "colls", "lims", "percent_viapoints_", "f_excess", "force",
+                                "deviation", "wiped_via_point", "table_height"]
             info["nwipedmarkers"] = len(self.wiped_markers)
             info["colls"] = self.collisions
             info["lims"] = self.joint_limits
@@ -1102,7 +835,7 @@ class Polishing(SingleArmEnv):
             done = done or self._check_terminated()
 
         return reward, done, info
-    
+
     def _get_wipe_information(self):
         """Returns set of wiping information"""
 
@@ -1112,13 +845,14 @@ class Polishing(SingleArmEnv):
         num_non_wiped_markers = 0
         if len(self.wiped_markers) < self.num_markers:
             for marker in self.objs[0].sites[:-1]:
-            # for marker in self.model.mujoco_arena.markers:
+                # for marker in self.model.mujoco_arena.markers:
                 if marker not in self.wiped_markers:
                     marker_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(marker)])
                     wipe_centroid += marker_pos
                     marker_positions.append(marker_pos)
                     num_non_wiped_markers += 1
-            wipe_distance = np.sum([np.linalg.norm(y - marker_positions[x - 1]) for x, y in enumerate(marker_positions)][1:])
+            wipe_distance = np.sum(
+                [np.linalg.norm(y - marker_positions[x - 1]) for x, y in enumerate(marker_positions)][1:])
             wipe_centroid /= max(1, num_non_wiped_markers)
             total_wipe_distance = np.linalg.norm(self._eef_xpos - marker_positions[0]) + wipe_distance
             mean_pos_to_things_to_wipe = wipe_centroid - self._eef_xpos
@@ -1128,7 +862,7 @@ class Polishing(SingleArmEnv):
             max_radius = np.max(np.linalg.norm(np.array(marker_positions) - wipe_centroid, axis=1))
         # Return all values
         return max_radius, wipe_centroid, mean_pos_to_things_to_wipe, total_wipe_distance
-    
+
     @property
     def _has_gripper_contact(self):
         """
