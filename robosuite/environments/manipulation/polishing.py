@@ -522,21 +522,21 @@ class Polishing(SingleArmEnv):
         active_markers = []
 
         # Only go into this computation if there are contact points
-        if self.total_force_ee >= 0 and self.sim.data.ncon != 0::
+        if self.total_force_ee >= 0 and self.sim.data.ncon != 0:
 
-        # Check each marker that is still active
-        for marker in self.objs[0].sites[:-1]:
+            # Check each marker that is still active
+            for marker in self.objs[0].sites[:-1]:
 
-            # Current marker 3D location in world frame
-            marker_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(marker)])
+                # Current marker 3D location in world frame
+                marker_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(marker)])
 
-            end_face_centroid = self.sim.data.site_xpos[self.robots[0].eef_site_id]
-            v = marker_pos - end_face_centroid
+                end_face_centroid = self.sim.data.site_xpos[self.robots[0].eef_site_id]
+                v = marker_pos - end_face_centroid
 
-            v_dist = np.linalg.norm(v)
+                v_dist = np.linalg.norm(v)
 
-            if v_dist < 0.02:
-                active_markers.append(marker)
+                if v_dist < 0.02:
+                    active_markers.append(marker)
 
         # Obtain the list of currently active (wiped) markers that where not wiped before
         # These are the markers we are wiping at this step
