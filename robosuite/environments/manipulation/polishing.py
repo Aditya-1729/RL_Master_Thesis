@@ -511,12 +511,12 @@ class Polishing(SingleArmEnv):
                  + self.reward_calc_c_contact * self.reward_contact \
                  + self.reward_calc_c_done * self.reward_done
 
-        print(self.reward_done)
-        print(self.reward_contact)
-        print(self.penalty_yvel)
-        print(self.penalty_xdist)
-        print(self.penalty_force)
-        print(self.penalty_xvel)
+        #print(self.reward_done)
+        #print(self.reward_contact)
+        #print(self.penalty_yvel)
+        #print(self.penalty_xdist)
+        #print(self.penalty_force)
+        #print(self.penalty_xvel)
 
         reward_min = self.reward_calc_c_force + self.reward_calc_c_xvel + self.reward_calc_c_xdist + self.reward_calc_c_yvel
         reward_max = self.reward_calc_c_contact
