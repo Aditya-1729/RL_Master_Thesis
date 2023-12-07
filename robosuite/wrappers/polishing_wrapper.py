@@ -62,9 +62,14 @@ class HybridPolicy2:
         eef_pos = self.env.sim.data.site_xpos[self.env.robots[0].eef_site_id]
         self.action[-3:] = self.rescale_agent_delta()
         guide_action = GuidePolicy2(self.env).predict()[True]
+        # sum nominal gains and agent gains 
         self.final_action = guide_action[0] + self.action
-        self.final_action[-3:] = eef_pos + np.clip(guide_action[0][-3:] + self.action[-3:], a_min=np.ones(3) * (-self.position_limits),\
+        # clip position commands of guide action
+        self.final_action[-3:] = eef_pos + np.clip(guide_action[0][-3:], a_min=np.ones(3) * (-self.position_limits),\
                             a_max=np.ones(3) * (self.position_limits))
+        # add position commands of agent to final action sent to the robot
+        self.final_action[-3:] +=  self.action[-3:]
+        
         return self.final_action, self.state
 
 
