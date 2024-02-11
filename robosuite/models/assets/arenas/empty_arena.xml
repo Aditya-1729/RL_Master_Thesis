@@ -6,7 +6,7 @@
     <!-- plaster walls -->
     <texture file="../textures/light-gray-plaster.png" type="2d" name="tex-light-gray-plaster"/>
     <material name="walls_mat" reflectance="0.0" shininess="0.1" specular="0.1" texrepeat="3 3" texture="tex-light-gray-plaster" texuniform="true" />
-  
+
   </asset>
   <worldbody>
     <!-- Floor -->

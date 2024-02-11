@@ -164,7 +164,7 @@ class SingleArm(Manipulator):
         # Add gripper to this robot model
         self.robot_model.add_gripper(self.gripper)
 
-    def reset(self, deterministic=True):
+    def reset(self, deterministic=False):
         """
         Sets initial pose of arm and grippers. Overrides gripper joint configuration if we're using a
         deterministic reset (e.g.: hard reset from xml file)
@@ -231,10 +231,12 @@ class SingleArm(Manipulator):
         """
 
         # clip actions into valid range
+        '''
         assert len(action) == self.action_dim, "environment got invalid action dimension -- expected {}, got {}".format(
             self.action_dim, len(action)
         )
-
+        '''
+        
         gripper_action = None
         if self.has_gripper:
             gripper_action = action[self.controller.control_dim :]  # all indexes past controller dimension indexes

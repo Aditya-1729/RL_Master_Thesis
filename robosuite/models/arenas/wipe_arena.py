@@ -1,7 +1,7 @@
 import numpy as np
 
 from robosuite.models.arenas import TableArena
-from robosuite.models.objects import CylinderObject, BottleObject, CurvedSurfaceObject
+from robosuite.models.objects import CylinderObject
 from robosuite.utils.mjcf_utils import CustomMaterial, find_elements
 
 
@@ -27,9 +27,9 @@ class WipeArena(TableArena):
         table_friction=(0.01, 0.005, 0.0001),
         table_offset=(0, 0, 0.8),
         coverage_factor=0.9,
-        num_markers=1, # 10
+        num_markers=10,
         table_friction_std=0,
-        line_width=0.2, #0.02
+        line_width=0.02,
         two_clusters=False,
     ):
         # Tactile table-specific features
@@ -59,49 +59,47 @@ class WipeArena(TableArena):
         pos = self.sample_start_pos()
 
         # Define dirt material for markers
-        # tex_attrib = {
-        #     "type": "cube",
-        # }
-        # mat_attrib = {
-        #     "texrepeat": "1 1",
-        #     "specular": "0.0",
-        #     "shininess": "0.0",
-        # }
-        # dirt = CustomMaterial(
-        #     texture="Dirt",
-        #     tex_name="dirt",
-        #     mat_name="dirt_mat",
-        #     tex_attrib=tex_attrib,
-        #     mat_attrib=mat_attrib,
-        #     shared=True,
-        # )
+        tex_attrib = {
+            "type": "cube",
+        }
+        mat_attrib = {
+            "texrepeat": "1 1",
+            "specular": "0.0",
+            "shininess": "0.0",
+        }
+        dirt = CustomMaterial(
+            texture="Dirt",
+            tex_name="dirt",
+            mat_name="dirt_mat",
+            tex_attrib=tex_attrib,
+            mat_attrib=mat_attrib,
+            shared=True,
+        )
 
         # Define line(s) drawn on table
-        # for i in range(self.num_markers):
+        for i in range(self.num_markers):
             # If we're using two clusters, we resample the starting position and direction at the halfway point
-            # if self.two_clusters and i == int(np.floor(self.num_markers / 2)):
-            #     pos = self.sample_start_pos()
-            # marker_name = f"contact{i}"
-            # marker = CylinderObject(
-            #     name=marker_name,
-            #     size=[self.line_width / 2, 0.1],
-            #     rgba=[1, 1, 1, 1],
-            #     material=dirt,
-            #     obj_type="visual",
-            #     joints=None,
-            # )
-        marker = CurvedSurfaceObject(name="marker_name")
-        self.marker = marker
-        # Manually add this object to the arena xml
-        self.merge_assets(marker)
-        table = find_elements(root=self.worldbody, tags="body", attribs={"name": "table"}, return_first=True)
-        table.append(marker.get_obj())
+            if self.two_clusters and i == int(np.floor(self.num_markers / 2)):
+                pos = self.sample_start_pos()
+            marker_name = f"contact{i}"
+            marker = CylinderObject(
+                name=marker_name,
+                size=[self.line_width / 2, 0.001],
+                rgba=[1, 1, 1, 1],
+                material=dirt,
+                obj_type="visual",
+                joints=None,
+            )
+            # Manually add this object to the arena xml
+            self.merge_assets(marker)
+            table = find_elements(root=self.worldbody, tags="body", attribs={"name": "table"}, return_first=True)
+            table.append(marker.get_obj())
 
-        # Add this marker to our saved list of all markers
-        self.markers.append(marker)
+            # Add this marker to our saved list of all markers
+            self.markers.append(marker)
 
-        # Add to the current dirt path
-        pos = self.sample_path_pos(pos)
+            # Add to the current dirt path
+            pos = self.sample_path_pos(pos)
 
     def reset_arena(self, sim):
         """
@@ -115,24 +113,24 @@ class WipeArena(TableArena):
         pos = self.sample_start_pos()
 
         # Loop through all visual markers
-        # for i, marker in enumerate(self.markers):
-        #     # If we're using two clusters, we resample the starting position and direction at the halfway point
-        #     if self.two_clusters and i == int(np.floor(self.num_markers / 2)):
-        #         pos = self.sample_start_pos()
-        #     # Get IDs to the body, geom, and site of each marker
-        #     body_id = sim.model.body_name2id(marker.root_body)
-        #     geom_id = sim.model.geom_name2id(marker.visual_geoms[0])
-        #     site_id = sim.model.site_name2id(marker.sites[0])
-        #     # Determine new position for this marker
-        #     position = np.array([pos[0], pos[1], self.table_half_size[2]])
-        #     # Set the current marker (body) to this new position
-        #     sim.model.body_pos[body_id] = position
-        #     # Reset the marker visualization -- setting geom rgba alpha value to 1
-        #     sim.model.geom_rgba[geom_id][3] = 1
-        #     # Hide the default visualization site
-        #     sim.model.site_rgba[site_id][3] = 0
-        #     # Sample next values in local marker trajectory
-        #     pos = self.sample_path_pos(pos)
+        for i, marker in enumerate(self.markers):
+            # If we're using two clusters, we resample the starting position and direction at the halfway point
+            if self.two_clusters and i == int(np.floor(self.num_markers / 2)):
+                pos = self.sample_start_pos()
+            # Get IDs to the body, geom, and site of each marker
+            body_id = sim.model.body_name2id(marker.root_body)
+            geom_id = sim.model.geom_name2id(marker.visual_geoms[0])
+            site_id = sim.model.site_name2id(marker.sites[0])
+            # Determine new position for this marker
+            position = np.array([pos[0], pos[1], self.table_half_size[2]])
+            # Set the current marker (body) to this new position
+            sim.model.body_pos[body_id] = position
+            # Reset the marker visualization -- setting geom rgba alpha value to 1
+            sim.model.geom_rgba[geom_id][3] = 1
+            # Hide the default visualization site
+            sim.model.site_rgba[site_id][3] = 0
+            # Sample next values in local marker trajectory
+            pos = self.sample_path_pos(pos)
 
     def sample_start_pos(self):
         """

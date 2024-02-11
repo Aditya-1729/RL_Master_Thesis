@@ -108,7 +108,7 @@ if __name__ == "__main__":
     test_value = controller_settings[controller_name][2]
 
     # Define the number of timesteps to use per controller action as well as timesteps in between actions
-    steps_per_action =75
+    steps_per_action = 75
     steps_per_rest = 75
 
     # initialize the task
@@ -122,7 +122,7 @@ if __name__ == "__main__":
         control_freq=20,
     )
     env.reset()
-    env.viewer.set_camera(camera_id=1)
+    env.viewer.set_camera(camera_id=0)
 
     # To accommodate for multi-arm settings (e.g.: Baxter), we need to make sure to fill any extra action space
     # Get total number of arms being controlled
@@ -149,16 +149,13 @@ if __name__ == "__main__":
             else:
                 action[count] = test_value
             total_action = np.tile(action, n)
-            test_obs,_,_,_ = env.step(total_action)
-            print("test_obs: {}, action: {}".format (test_obs["robot0_eef_pos"], total_action))
+            env.step(total_action)
             env.render()
         for i in range(steps_per_rest):
             total_action = np.tile(neutral, n)
-            obs,_,_,_= env.step(total_action)
-            print("rest_obs:{} action: {}".format(obs["robot0_eef_pos"], total_action))
+            env.step(total_action)
             env.render()
         count += 1
 
-    # Shut down this env before16
-    #starting the next test
+    # Shut down this env before starting the next test
     env.close()

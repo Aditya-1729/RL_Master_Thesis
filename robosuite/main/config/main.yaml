@@ -1,0 +1,19 @@
+defaults:
+  - env: polishing
+  - controller: position_var #position_var #position_var_sweep
+  - task_config: force_control_4
+  - algorithm: sac
+  - _self_  
+
+root_dir: "./exp"
+use_lr_schedule: False
+experiment: ${algorithm.name}_${seed}
+dir: ${root_dir}/${algorithm.name}/${now:%Y.%m.%d}/s_${seed}/${now:%H%M%S}
+project: Report30_11
+use_wandb: False
+seed: 5
+# experiment: ResRL_s_${seed}_${controller.agent_config}_B_0_l_4000_std_0_mu_0_test
+
+hydra:
+  run:
+    dir: ${dir}

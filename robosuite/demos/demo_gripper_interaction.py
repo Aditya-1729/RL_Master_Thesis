@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
     # start simulation
     model = world.get_model(mode="mujoco")
-    
+
     sim = MjSim(model)
     viewer = OpenCVRenderer(sim)
     render_context = MjRenderContextOffscreen(sim, device_id=-1)
@@ -129,6 +129,5 @@ if __name__ == "__main__":
         # Step through sim
         sim.step()
         sim.data.qfrc_applied[_ref_joint_vel_indexes] = sim.data.qfrc_bias[_ref_joint_vel_indexes]
-        print(sim.data.geom_xmat(mujoco_object))
-        # viewer.render()
+        viewer.render()
         step += 1

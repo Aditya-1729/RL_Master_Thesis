@@ -13,7 +13,35 @@ class BottleObject(MujocoXMLObject):
         super().__init__(
             xml_path_completion("objects/bottle.xml"),
             name=name,
-            # joints=[dict(type="free", damping="0.0005")],
+            joints=[dict(type="free", damping="0.0005")],
+            obj_type="all",
+            duplicate_collision_geoms=True,
+        )
+
+
+class Flat_top(MujocoXMLObject):
+    """
+    Polishing object
+    """
+    def __init__(self, name):
+        super().__init__(
+            xml_path_completion("objects/flat_top.xml"),
+            name=name,
+            # joints=[dict(type="free", damping="0.5")],
+            joints=None,
+            obj_type="all",
+            duplicate_collision_geoms=True,
+        )
+
+class Incline(MujocoXMLObject):
+    """
+    Polishing object
+    """
+    def __init__(self, name):
+        super().__init__(
+            xml_path_completion("objects/incline_30.xml"),
+            name=name,
+            # joints=[dict(type="free", damping="0.5")],
             joints=None,
             obj_type="all",
             duplicate_collision_geoms=True,
@@ -21,7 +49,7 @@ class BottleObject(MujocoXMLObject):
 
 class CurvedSurfaceObject(MujocoXMLObject):
     """
-    Bottle object
+    Polishing object
     """
 
     def __init__(self, name):
@@ -33,7 +61,6 @@ class CurvedSurfaceObject(MujocoXMLObject):
             obj_type="all",
             duplicate_collision_geoms=True,
         )
-
 
 class CanObject(MujocoXMLObject):
     """

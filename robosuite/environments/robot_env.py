@@ -568,18 +568,19 @@ class RobotEnv(MujocoEnv):
                 @self.robots[i].gripper.dof dimensions should be actuation controls for the gripper.
             policy_step (bool): Whether a new policy step (action) is being taken
 
-        Raises:
-            AssertionError: [Invalid action dimension]
         """
+        '''  
         # Verify that the action is the correct dimension
+              
         assert len(action) == self.action_dim, "environment got invalid action dimension -- expected {}, got {}".format(
             self.action_dim, len(action)
         )
-
+        Commented out the assertion because we over-write the action_dim of the agent
+        '''        
         # Update robot joints based on controller actions
         cutoff = 0
         for idx, robot in enumerate(self.robots):
-            robot_action = action[cutoff : cutoff + robot.action_dim]
+            robot_action = action #[cutoff : cutoff + robot.action_dim] #Big change
             robot.control(robot_action, policy_step=policy_step)
             cutoff += robot.action_dim
 

@@ -16,7 +16,10 @@ from .xml_objects import (
     CanVisualObject,
     PlateWithHoleObject,
     DoorObject,
-    CurvedSurfaceObject
+    CurvedSurfaceObject,
+    Incline,
+    Flat_top,
+
 )
 from .primitive import *
 from .composite import *

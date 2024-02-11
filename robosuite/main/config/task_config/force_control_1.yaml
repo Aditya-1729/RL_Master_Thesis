@@ -1,0 +1,44 @@
+
+# settings for reward
+arm_limit_collision_penalty: -10.0  # penalty for reaching joint limit or arm collision (except the wiping tool) with the table
+wipe_contact_reward: 1  # reward for contacting something with the wiping tool  #0.1
+unit_wiped_reward: 50.0  # reward per peg wiped
+ee_accel_penalty: 0  # penalty for large end-effector accelerations
+
+
+excess_force_penalty_mul: 0.23 #10  # penalty for each step that the force is over the safety threshold       #0.05
+low_force_penalty_mul: 0.15
+
+
+
+
+distance_multiplier: 10.0  # multiplier for the dense reward inversely proportional to the mean location of the pegs to wipe
+distance_th_multiplier: 5.0  # multiplier in the tanh function for the aforementioned reward
+# settings for table top
+table_full_size: [0.5, 0.8, 0.05]  # Size of tabletop
+table_offset: [0.15, 0, 0.9]  # Offset of table (z dimension defines max height of table)
+table_friction: [0.03, 0.005, 0.0001]  # Friction parameters for the table
+table_friction_std: 0  # Standard deviation to sample different friction parameters for the table each episode
+table_height: 0.0  # Additional height of the table over the default location
+table_height_std: 0.0  # Standard deviation to sample different heigths of the table each episode
+line_width: 0.04  # Width of the line to wipe (diameter of the pegs)
+two_clusters: False  # if the dirt to wipe is one continuous line or two
+coverage_factor: 0.6  # how much of the table surface we cover
+num_markers: 100  # How many particles of dirt to generate in the environment
+# settings for thresholds
+contact_threshold: 0.30  # Minimum eef force to qualify as contact [N]
+pressure_threshold: 1  # force threshold (N) to overcome to get increased contact wiping reward
+pressure_threshold_max: 2 # maximum force allowed (N)
+target_force: 1.5
+# misc settings
+print_results: False  # Whether to print results or not
+get_info: False  # Whether to grab info after each env step if not
+use_robot_obs: True  # if we use robot observations (proprioception) as input to the policy
+use_contact_obs: True  # if we use a binary observation for whether robot is in contact or not
+early_terminations: True  # Whether we allow for early terminations or not
+use_condensed_obj_obs: True  # Whether to use condensed object observation representation (only applicable if obj obs is active)
+no_contact_penalty: 0
+force_multiplier: 5 # 0.5
+dist_th: 0.01
+indent: 0.003
+reward_mode: 1

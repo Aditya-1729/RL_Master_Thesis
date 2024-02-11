@@ -1,0 +1,21 @@
+  type: "OSC_POSITION"
+  input_max: 1
+  input_min: -1
+  output_max: [0.02, 0.02, 0.02]
+  output_min: [-0.02, -0.02, -0.02]
+  kp: 40
+  damping_ratio: 3
+  impedance_mode: "variable"
+  kp_limits: [1, 400]
+  damping_ratio_limits: [1, 10]
+  position_limits: null
+  control_delta: False
+  interpolation: null
+  ramp_ratio: 0.2
+  guide_policy: [7,7,7,7,7,7,200,200,200,200,200,200]
+  indent: 0.0183
+  agent_config: ???
+  # 0 for curriculum and SAC only
+  #3 for split control
+  #residual_2: high/2 and low = -high/2
+  #residual_3: high/2 only

@@ -125,7 +125,7 @@ class MujocoEnv(metaclass=EnvMeta):
         self.cur_time = None
         self.model_timestep = None
         self.control_timestep = None
-        self.deterministic_reset = True  # Whether to add randomized resetting of objects / robot joints
+        self.deterministic_reset = False  # Whether to add randomized resetting of objects / robot joints
 
         self.renderer = renderer
         self.renderer_config = renderer_config
@@ -482,7 +482,12 @@ class MujocoEnv(metaclass=EnvMeta):
         object_names = {object_names} if type(object_names) is str else set(object_names)
         for obj in self.model.mujoco_objects:
             if obj.name in object_names:
-                self.sim.data.set_joint_qpos(obj.joints[0], np.array((10, 10, 10, 1, 0, 0, 0)))
+                #adding try and except because our object doesnt have joint and this is called for reset
+                try:
+                    self.sim.data.set_joint_qpos(obj.joints[0], np.array((10, 10, 10, 1, 0, 0, 0)))
+                except: 
+                    body_id = self.sim.model.body_name2id(obj.root_body)
+                    self.sim.model.body_pos[body_id] = np.array((10, 10, 10))
 
     def visualize(self, vis_settings):
         """
@@ -557,7 +562,7 @@ class MujocoEnv(metaclass=EnvMeta):
         self.reset()
 
         # Turn off deterministic reset
-        # self.deterministic_reset = False
+        self.deterministic_reset = False
 
     def check_contact(self, geoms_1, geoms_2=None):
         """

@@ -98,6 +98,9 @@ class OperationalSpaceController(Controller):
 
         uncouple_pos_ori (bool): Whether to decouple torques meant to control pos and torques meant to control ori
 
+        agent_config (int): The configuration of the agent's action space used in the RL wrappers. 
+            It is set 0, which is the default full action space 15 dimensions [6 Kp, 6 kd and 3 pos]. 
+
         **kwargs: Does nothing; placeholder to "sink" any additional arguments so that instantiating this controller
             via an argument dict that has additional extraneous arguments won't raise an error
 
@@ -111,6 +114,8 @@ class OperationalSpaceController(Controller):
         eef_name,
         joint_indexes,
         actuator_range,
+        guide_policy,
+        indent,
         input_max=1,
         input_min=-1,
         output_max=(0.05, 0.05, 0.05, 0.5, 0.5, 0.5),
@@ -128,6 +133,7 @@ class OperationalSpaceController(Controller):
         control_ori=True,
         control_delta=True,
         uncouple_pos_ori=True,
+        agent_config="SAC", # does no specific overwriting of the agent's action space, SAC_Curriculum shares the same default action space.
         **kwargs,  # does nothing; used so no error raised when dict is passed with extra terms used previously
     ):
 
@@ -152,7 +158,8 @@ class OperationalSpaceController(Controller):
         self.input_min = self.nums2array(input_min, self.control_dim)
         self.output_max = self.nums2array(output_max, self.control_dim)
         self.output_min = self.nums2array(output_min, self.control_dim)
-
+        self.guide_policy_gains = self.nums2array(guide_policy,12)
+        self.indent= indent
         # kp kd
         self.kp = self.nums2array(kp, 6)
         self.kd = 2 * np.sqrt(self.kp) * damping_ratio
@@ -171,6 +178,9 @@ class OperationalSpaceController(Controller):
 
         # Impedance mode
         self.impedance_mode = impedance_mode
+
+        #agent_config
+        self.agent_config = agent_config
 
         # Add to control dim based on impedance_mode
         if self.impedance_mode == "variable":
@@ -235,6 +245,7 @@ class OperationalSpaceController(Controller):
         if self.use_delta:
             if delta is not None:
                 scaled_delta = self.scale_action(delta)
+                # scaled_delta=delta #TODO
                 if not self.use_ori and set_ori is None:
                     # Set default control for ori since user isn't actively controlling ori
                     set_ori = np.array([[0.0, 1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, -1.0]])
@@ -340,16 +351,26 @@ class OperationalSpaceController(Controller):
         else:
             desired_wrench = np.concatenate([desired_force, desired_torque])
             decoupled_wrench = np.dot(lambda_full, desired_wrench)
-
+        self.decoupled_wrench = decoupled_wrench[:3]
+        self.desired_force = desired_force
         # Gamma (without null torques) = J^T * F + gravity compensations
-        self.torques = np.dot(self.J_full.T, decoupled_wrench) + self.torque_compensation
-
+        # self.torques = np.dot(self.J_full.T, decoupled_wrench) + self.torque_compensation
+        self.torques = np.dot(self.J_full.T, np.concatenate([desired_force,desired_torque])) + self.torque_compensation
         # Calculate and add nullspace torques (nullspace_matrix^T * Gamma_null) to final torques
         # Note: Gamma_null = desired nullspace pose torques, assumed to be positional joint control relative
         #                     to the initial joint positions
-        self.torques += nullspace_torques(
-            self.mass_matrix, nullspace_matrix, self.initial_joint, self.joint_pos, self.joint_vel
-        )
+        '''
+        eq position is the initial joint position used to calculate the nullspace torques
+            The mean joint configuration for trajectory travelled by the robot can be used as the eq position.
+        
+        We use the ros_example controller formulation to calculate the nullspace torques
+        '''
+        self.eq_q=np.array([ 0.29967226,  0.7752009,   0.02467113, -2.00475776,  0.22705841,  2.79772419,
+            0.83413369])
+        self.torques+=np.matmul(np.eye(7) - np.matmul(self.J_full.transpose(),np.linalg.pinv(self.J_full.transpose())),np.matmul((np.eye(7)*1),(np.array(self.eq_q- self.joint_pos)))) - np.matmul((np.eye(7)*2*np.sqrt(1)),np.array(self.joint_vel))
+        # self.torques += nullspace_torques(
+        #     self.mass_matrix, nullspace_matrix, self.initial_joint, self.joint_pos, self.joint_vel
+        # )
 
         # Always run superclass call for any cleanups at the end
         super().run_controller()
@@ -391,6 +412,8 @@ class OperationalSpaceController(Controller):
             :Mode `'fixed'`: [joint pos command]
             :Mode `'variable'`: [damping_ratio values, kp values, joint pos command]
             :Mode `'variable_kp'`: [kp values, joint pos command]
+        
+        Agent config uses the mode "variable" and overwrites the action space of the agent with different configs
 
         Returns:
             2-tuple:
@@ -401,12 +424,49 @@ class OperationalSpaceController(Controller):
         if self.impedance_mode == "variable":
             low = np.concatenate([self.damping_ratio_min, self.kp_min, self.input_min])
             high = np.concatenate([self.damping_ratio_max, self.kp_max, self.input_max])
-        elif self.impedance_mode == "variable_kp":
+        if self.impedance_mode == "variable_kp":
             low = np.concatenate([self.kp_min, self.input_min])
             high = np.concatenate([self.kp_max, self.input_max])
-        else:  # This is case "fixed"
+        if self.impedance_mode == "fixed":
             low, high = self.input_min, self.input_max
+        '''
+        agent_config is added to over-write the action space for the RL agent
+        '''
+        if self.agent_config == 1:
+            low = np.concatenate([low[:3], low[6:9]])
+            high = np.concatenate([high[:3], high[6:9]])
+        if self.agent_config == 2:
+            low = np.concatenate([low[:4], low[6:10]])
+            high = np.concatenate([high[:4], high[6:10]])
+        '''
+        agent config 3 is for the cases where the RL agent only provides controller gains and the nominal 
+        controller provides position commands without delta control i.e absolute positions
+        '''
+        if self.agent_config == "SAC_Split":
+            low = low[:12]
+            high = high[:12]
+        
+            
+        '''
+        residual_1 is where we simply the hybrid action is simply
+        \pi_nom + \pi_agent as opposed to 0.5*(\pi_nom + \pi_agent)
+        '''
+        if self.agent_config == "residual_1":
+            low = -high
+
+        if self.agent_config == "SAC_Residual":
+            high=high/2
+            low=-high
+        
+        if self.agent_config == "residual_3":
+            high=high/2
+
+        if self.agent_config == "residual_4":
+            high[:12]=high[:12]-self.guide_policy_gains
+            low[:12] = -self.guide_policy_gains
+
         return low, high
+
 
     @property
     def name(self):

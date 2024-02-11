@@ -1,0 +1,61 @@
+program: /hpcwork/thes1499/10_8/robosuite/robosuite/main/hydra_sweep.py
+name: contact_4N
+project: HPC_sweep
+method: bayes
+metric:
+  name: Wipe/Return
+  goal: maximize
+parameters:
+  Kp_x: 
+    distribution: 'int_uniform'
+    max: 400
+    min: 0
+  Kp_y: 
+    distribution: 'int_uniform'
+    max: 400
+    min: 0
+  Kp_z: 
+    distribution: 'int_uniform'
+    max: 400
+    min: 0
+  Kp_or_x: 
+    distribution: 'int_uniform'
+    max: 400
+    min: 0
+  Kp_or_y: 
+    distribution: 'int_uniform'
+    max: 400
+    min: 0
+  Kp_or_z:
+    distribution: 'int_uniform'
+    max: 400
+    min: 0  
+  Kd_x: 
+    distribution: 'int_uniform'
+    max: 10
+    min: 1
+  Kd_y: 
+    distribution: 'int_uniform'
+    max: 10
+    min: 1
+  Kd_z: 
+    distribution: 'int_uniform'
+    max: 10
+    min: 1
+  Kd_or_x: 
+    distribution: 'int_uniform'
+    max: 10
+    min: 1
+  Kd_or_y: 
+    distribution: 'int_uniform'
+    max: 10
+    min: 1
+  Kd_or_z:
+    distribution: 'int_uniform'
+    max: 10
+    min: 1
+
+  indent:
+    distribution: 'uniform'
+    max: 0.02
+    min: 0.005
