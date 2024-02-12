@@ -1,4 +1,4 @@
-
+# Domain randomization with table height variation
 # settings for quadratic reward
 arm_limit_collision_penalty: -10.0  # penalty for reaching joint limit or arm collision (except the wiping tool) with the table
 wipe_contact_reward: 0.997 #1 # reward for contacting something with the wiping tool  #0.1

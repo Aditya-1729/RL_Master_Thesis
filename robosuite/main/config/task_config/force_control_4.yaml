@@ -11,21 +11,7 @@ position_track_multiplier: 10
 ##--------------------------------------------------------------------------------------------------------------------------------------##
                                                         # force parameters
 ##--------------------------------------------------------------------------------------------------------------------------------------##
-# excess_force_penalty_mul: 0.01726 #0.0388 #0.0218 #0.00133 #0.0439 #0.00175 # #0.055 #10  # penalty for each step that the force is over the safety threshold       #0.05
-# low_force_penalty_mul: 0.01726 #0.0388 #0.0218 #0.00133 #0.0439 #0.00175 # #0.055
-# target_force: 6
-# safe_force_low: 6
-# safe_force_high: 6
-# force_in_window_mul: 0.00739 #0.0166  #0.0032 #0.012 #0.0011 
-# f_cap: 15
 
-# excess_force_penalty_mul: 0.05592 #0.0388 #0.0218 #0.00133 #0.0439 #0.00175 # #0.055 #10  # penalty for each step that the force is over the safety threshold       #0.05
-# low_force_penalty_mul: 0.05592 #0.01398 #0.0388 #0.0218 #0.00133 #0.0439 #0.00175 # #0.055
-# target_force: 5
-# safe_force_low: 5
-# safe_force_high: 5
-# force_in_window_mul: 0.02395 #0.005988 #0.0166  #0.0032 #0.012 #0.0011 
-# f_cap: 10
 excess_force_penalty_mul: 0.223712 #0.0388 #0.0218 #0.00133 #0.0439 #0.00175 # #0.055 #10  # penalty for each step that the force is over the safety threshold       #0.05
 low_force_penalty_mul: 0.223712 #0.01398 #0.0388 #0.0218 #0.00133 #0.0439 #0.00175 # #0.055
 target_force: 5
@@ -34,29 +20,6 @@ safe_force_high: 5
 force_in_window_mul: 0.095808 #0.005988 #0.0166  #0.0032 #0.012 #0.0011 
 f_cap: 7.5
 f_safe: 10
-# excess_force_penalty_mul: 0.03883 #0.0388 #0.0218 #0.00133 #0.0439 #0.00175 # #0.055 #10  # penalty for each step that the force is over the safety threshold       #0.05
-# low_force_penalty_mul: 0.03883 #0.0388 #0.0218 #0.00133 #0.0439 #0.00175 # #0.055
-# target_force: 4
-# safe_force_low: 4
-# safe_force_high: 4
-# force_in_window_mul: 0.0166  #0.0032 #0.012 #0.0011 
-# f_cap: 10
-
-# excess_force_penalty_mul: 0.0218 #0.0388 #0.0218 #0.00133 #0.0439 #0.00175 # #0.055 #10  # penalty for each step that the force is over the safety threshold       #0.05
-# low_force_penalty_mul: 0.0218 #0.0388 #0.0218 #0.00133 #0.0439 #0.00175 # #0.055
-# target_force: 7
-# safe_force_low: 7
-# safe_force_high: 7
-# force_in_window_mul: 0.00935 #0.0166  #0.0032 #0.012 #0.0011 
-# f_cap: 15
-
-# excess_force_penalty_mul: 0.0388 #0.0218 #0.00133 #0.0439 #0.00175 # #0.055 #10  # penalty for each step that the force is over the safety threshold       #0.05
-# low_force_penalty_mul: 0.0388 #0.0218 #0.00133 #0.0439 #0.00175 # #0.055
-# target_force: 9
-# safe_force_low: 9
-# safe_force_high: 9
-# force_in_window_mul: 0.0166  #0.0032 #0.012 #0.0011 
-# f_cap: 15
 
 ##--------------------------------------------------------------------------------------------------------------------------------------##
 
@@ -69,11 +32,6 @@ table_friction: [0.03, 0.005, 0.0001]  # Friction parameters for the table
 table_friction_std: 0  # Standard deviation to sample different friction parameters for the table each episode
 table_height: 0  # Additional height of the table over the default location
 table_height_std: 0  # Standard deviation to sample different heigths of the table each episode
-line_width: 0.04  # Width of the line to wipe (diameter of the pegs)
-two_clusters: False  # if the dirt to wipe is one continuous line or two
-coverage_factor: 0.6  # how much of the table surface we cover
-num_markers: 100  # How many particles of dirt to generate in the environment
-# settings for thresholds
 contact_threshold: 0.30  # Minimum eef force to qualify as contact [N]
 pressure_threshold: 1  # force threshold (N) to overcome to get increased contact wiping reward
 pressure_threshold_max: 2 # maximum force allowed (N)
@@ -90,7 +48,6 @@ use_force_obs: True
 no_contact_penalty: 0
 force_multiplier: 5 # 0.5
 dist_th: 0.02
-indent: 0.015
 reward_mode: 2
 clip: 0.02
 min_vel: 0.003

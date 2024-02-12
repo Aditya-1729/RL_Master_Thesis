@@ -13,7 +13,6 @@ from robosuite.wrappers import Wrapper
 class ControlDelta:
     def __init__ (self, action, env):
         self.action=action
-        # self.state = state
         self.position_limits = env.position_limits
         self.env= env
         self.output_max = self.env.robots[0].controller.output_max
@@ -116,10 +115,10 @@ class StandaloneWrapper(Wrapper, gym.Env):
                 raise TypeError("Seed must be an integer type!")
         ob_dict = self.env.reset()
         
-        site_0 = self.env.objs[0].sites[0]
+        
         '''
         # The below code is the subroutine to make a gentle contact with the robot without changing its initial reset position
-        
+        site_0 = self.env.objs[0].sites[0]
         site_pos_0 = self.env.sim.data.site_xpos[self.env.sim.model.site_name2id(site_0)]  
         dist=np.inf     
         action= np.zeros(self.env.action_spec[0].shape)

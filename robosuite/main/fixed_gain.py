@@ -48,16 +48,14 @@ if __name__ == "__main__":
     sites = cycle(env.objs[0].sites)
     site = env.objs[0].sites[0]
     site_pos = env.sim.data.site_xpos[env.sim.model.site_name2id(site)]
-    # action = np.array((0.15,-0.2,0.945))
-    # action = np.array((3,3,3, 40,40,40))
+
 
     while True:
         a = site_pos
         t+=1
-        # action[:2] = a[:2]
-        # action[-1] = a[-1] - indent
+
         eef_pos = env.sim.data.site_xpos[env.robots[0].eef_site_id]
-        # print(f'eef_pose:{eef_pos}')
+
         action = np.empty(15)
         action[:12]=np.array((10,10,10,10,7,10,200,300,300,200,200,200))
         action[12:14] = eef_pos[:2] + np.clip(site_pos[:2]-eef_pos[:2], a_min=np.array([-position_limits, -position_limits]), a_max=np.array([position_limits, position_limits]))
@@ -65,11 +63,6 @@ if __name__ == "__main__":
         # total_force = np.linalg.norm(np.array(env.robots[0].recent_ee_forcetorques.current[:3]))
         total_force = np.linalg.norm(env.robots[0].ee_force - env.ee_force_bias)
         # total_moment = np.linalg.norm(np.array(env.robots[0].recent_ee_forcetorques.current[:-3]))
-        # if total_force>1:
-            # t_contact+=1
-        # if env.sim.data.ncon >=4:
-        #     t_contact+=1
-        # print(action)
         obs, reward, done, _, info = env.step(action)
         # env.render()
         # print(obs)
@@ -106,18 +99,15 @@ if __name__ == "__main__":
         if dist < dist_th:
             print ("wiped: {}, distance: {}, Return: {}, timesteps: {}, force : {}".format(site, dist, Return, t, total_force))
             site = next(sites)
-            # print(len(env.wiped_markers))
-            # print(f"robot_joint_pos: {obs['robot0_joint_pos']}")
-            # print(f"robot_joint_pos: {env.robots[0]._joint_positions}")
+
             site_pos = env.sim.data.site_xpos[env.sim.model.site_name2id(site)]
             
         if done: #removed horizon limit
             print('done')
             break
-            print('resetting')
-            env.reset()
+
     env.close()
-    # wandb.finish()
+
 
 
 

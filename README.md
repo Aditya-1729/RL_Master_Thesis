@@ -66,6 +66,13 @@ NOTE: `stable-baselines3` is used as a [git submodule](https://git-scm.com/book/
 - `stable-baselines3/Residual_RL`: This folder consists of `Residual_SAC` class which inherits the SAC class from stable_baselines3 and implements the residual learning algorithm and adds the burn-in parameter
 - `stable-baselines3/bash_scripts`: The folder consists of bash scripts to run the training of the different agent configurations on RWTH HPC.
 
+- The default configurations employed for training of all the agents:
+  - env: `polishing` 
+  - controller: `position_var`
+  - task_config: `force_control_4`
+  - use_lr_schedule: `false`
+
+
 ## Installation and Use
 - Clone the robosuite repository and checkout to branch `AP_Master_Thesis`
 - Add stable-baselines3 as a submodule to the robosuite repository and checkout to its branch `AP_Master_Thesis`

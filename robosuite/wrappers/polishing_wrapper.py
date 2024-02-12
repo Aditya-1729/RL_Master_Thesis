@@ -14,29 +14,16 @@ class GuidePolicy2:
     def __init__(self,env):
         self.env=env
         
-        self.position_limits=0.02
-        self.dist_th=0.02
-        self.indent= 0.01183  
+        self.position_limits=env.position_limits
+        self.dist_th=env.dist_th
+        self.indent= env.robots[0].controller.indent
 
     def predict(self):
         self.action= np.zeros(self.env.action_spec[0].shape)
         eef_pos = self.env.sim.data.site_xpos[self.env.robots[0].eef_site_id]
-        # self.action[:12]=np.array((7,7,7,7,7,7,200,300,300,200,200,200))
-        # self.action[:12]=np.array((7,7,7,7,7,7,200,200,200,200,200,200))
         self.action[:12] = self.env.robots[0].controller.guide_policy_gains
-        # self.action[:12] = self.env.robots[0].controller.guide_policy_gains
         self.action[12:14] = self.env.site_pos[:2]-eef_pos[:2]
         self.action[-1] = self.env.site_pos[-1] - self.indent - eef_pos[-1]
-        # delta = eef_pos - self.env.site_pos
-        # dist = np.linalg.norm(delta)
-        # print(f"dist:{dist} site: {self.site}")
-        '''
-        Taking care of site switching within the wrapper
-        TODO May be find a cooler way to do it!!
-        if dist < self.dist_th:
-            self.env.site = next(self.env.sites)
-            self.env.site_pos = self.env.env.sim.data.site_xpos[self.env.env.sim.model.site_name2id(self.env.site)]
-        '''
         return self.action
     
 class HybridPolicy2:
@@ -158,6 +145,10 @@ class ResidualWrapper(Wrapper, gym.Env):
                 raise TypeError("Seed must be an integer type!")
         ob_dict = self.env.reset()
 
+        '''
+        # The below code is the subroutine to make a gentle contact with the robot without changing its initial reset position
+        # for the domain randomization of run of table height variation
+         
         site_0 = self.env.objs[0].sites[0]
         site_pos_0 = self.env.sim.data.site_xpos[self.env.sim.model.site_name2id(site_0)]  
         dist=np.inf     
@@ -177,6 +168,7 @@ class ResidualWrapper(Wrapper, gym.Env):
             if dist<0.07:
                 action[12:]=eef_pos
                 self.env.step(action)
+        '''
         
         return self._flatten_obs(ob_dict), {}
 
