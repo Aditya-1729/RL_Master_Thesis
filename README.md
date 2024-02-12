@@ -1,4 +1,4 @@
-# Achieving Complaint Motion by Combining RL with Cartesian Impedance Controller
+# Achieving Compliant Motion Control for Continuous-Contact Tasks with Reinforcement Learning
 <p>
 <div style="text-align:center">
   <img src="docs/images/Simulation.png" height="200" width=200 style="text-align:center"/>
