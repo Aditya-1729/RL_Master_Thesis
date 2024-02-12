@@ -47,7 +47,7 @@ Configurations are managed using [hydra](https://hydra.cc/) and the experiments 
 
 ## Repository Structure
 
-The key components built on top of robosuite [[Documentations]](https://robosuite.ai/docs/overview.html) are as follows:
+**Components built on top of robosuite [[Documentations]](https://robosuite.ai/docs/overview.html) are as follows:**
 - `robosuite/environments/polishing.py`: The custom environment for the polishing task
 - `robosuite/controllers/osc.py`: The custom impedance controller
 - `robosuite/models/grippers/custom_gripper.py`: The custom compliant gripper model
@@ -57,15 +57,18 @@ The key components built on top of robosuite [[Documentations]](https://robosuit
 - `robosuite/wrappers/`: The folder consists of custom wrappers that interface the robosuite environments for RL. The `__init__`.py file lists the registered wrapper classes: Standalonewrapper, ResidualWrapper, SplitWrapper, and CurriculumWrapper 
 - `robosuite/main/agent_eval.py`: The script to evaluate the trained agents
 
-Key scripts for training and evaluation:
-- `stable_baselines3/sac_hydra.py`: A common training script for all the RL agents
-- `stable_baselines3/Callbacks/`: The folder consists of custom callbacks which help log task specific metrics during evaluation runs and safety triggers during training.
-- `stable_baselines3/time_curriculum`: The folder consists of `get_tbc_algorithm` class which inherits the BaseAlgorithm class from stable_baselines3 and implements the time-based curriculum learning algorithm.
-- `stable_baselines3/Residual_RL`: This folder consists of `Residual_SAC` class which inherits the SAC class from stable_baselines3 and implements the residual learning algorithm and adds the burn-in parameter
-- `stable_baselines3/bash_scripts`: The folder consists of bash scripts to run the training of the different agent configurations on RWTH HPC.
+**Training and evaluation with Stable-Baselines3:**
+
+NOTE: `stable-baselines3` is used as a [git submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules), i.e it is added as its own git respository within robosuite 
+- `stable-baselines3/sac_hydra.py`: A common training script for all the RL agents
+- `stable-baselines3/Callbacks/`: The folder consists of custom callbacks which help log task specific metrics during evaluation runs and safety triggers during training.
+- `stable-baselines3/time_curriculum`: The folder consists of `get_tbc_algorithm` class which inherits the BaseAlgorithm class from stable_baselines3 and implements the time-based curriculum learning algorithm.
+- `stable-baselines3/Residual_RL`: This folder consists of `Residual_SAC` class which inherits the SAC class from stable_baselines3 and implements the residual learning algorithm and adds the burn-in parameter
+- `stable-baselines3/bash_scripts`: The folder consists of bash scripts to run the training of the different agent configurations on RWTH HPC.
 
 ## Installation and Use
-- Clone the repository
+- Clone the robosuite repository and checkout to branch `AP_Master_Thesis`
+- Add stable-baselines3 as a submodule to the robosuite repository and checkout to its branch `AP_Master_Thesis`
 - Install [miniconda on RWTH HPC](https://help.itc.rwth-aachen.de/en/service/rhr4fjjutttf/article/7230ed5050e94aacbbe1db14cada5b56/) 
 - Create `robosuite` environment using the `robosuite/environment.yml`; The python version used is 3.8.16
 - Ensure that your custom macros file or the `robsuite/macros.py` has MUJOCO_GPU_RENDERING set to False when running on RWTH HPC via remote tunnel from your system.
